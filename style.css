@@ -97,7 +97,6 @@ select {
   color: white;
 }
 
-/* Install banner */
 .install-banner {
   display: flex;
   justify-content: space-between;
@@ -128,7 +127,6 @@ select {
   flex-shrink: 0;
 }
 
-/* Today */
 .today-card {
   width: 100%;
   margin: 0 auto 20px;
@@ -142,6 +140,10 @@ select {
 .today-header {
   text-align: left;
   margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
 }
 
 .today-list {
@@ -198,7 +200,6 @@ select {
   color: var(--accent-soft);
 }
 
-/* Weekly summary */
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -226,7 +227,6 @@ select {
   font-weight: 800;
 }
 
-/* Weekly chart */
 .chart-card {
   width: 100%;
   margin: 0 auto 24px;
@@ -282,7 +282,6 @@ select {
   margin-top: 8px;
 }
 
-/* Insights */
 .insights-card {
   width: 100%;
   margin: 0 auto 24px;
@@ -333,7 +332,6 @@ select {
   line-height: 1.4;
 }
 
-/* Empty state */
 .empty-state {
   width: 100%;
   max-width: 520px;
@@ -363,7 +361,6 @@ select {
   opacity: 0.78;
 }
 
-/* Habit list */
 #habitList {
   padding: 0;
   margin: 20px 0 24px;
@@ -471,7 +468,6 @@ select {
   border-radius: 999px;
 }
 
-/* Heat map */
 .heatmap-wrap {
   margin-top: 12px;
 }
@@ -531,7 +527,6 @@ select {
   opacity: 0.64;
 }
 
-/* Controls */
 .card-controls {
   position: absolute;
   top: 8px;
@@ -569,8 +564,8 @@ select {
   box-shadow: 0 0 12px rgba(20, 184, 166, 0.35);
 }
 
-/* Monthly section */
-.monthly-section {
+.monthly-section,
+.year-achievements-section {
   width: 100%;
   margin: 0 auto 24px;
   background: var(--panel);
@@ -588,7 +583,8 @@ select {
   margin-bottom: 14px;
 }
 
-.monthly-header-text {
+.monthly-header-text,
+.year-achievements-header {
   text-align: left;
 }
 
@@ -708,29 +704,29 @@ select {
   border: none;
 }
 
-/* Year achievements */
-.year-achievements-section {
-  width: 100%;
-  margin: 0 auto 24px;
-  background: var(--panel);
-  border-radius: 16px;
-  padding: 16px;
-  box-sizing: border-box;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
-}
-
-.year-achievements-header {
-  text-align: left;
-  margin-bottom: 14px;
-}
-
-.year-achievements-grid {
+.year-achievements-grid,
+.detail-stats-grid,
+.detail-year-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
 }
 
-.achievement-card {
+.year-achievements-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.detail-stats-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-bottom: 16px;
+}
+
+.detail-year-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.achievement-card,
+.detail-stat-card,
+.detail-year-card {
   background: var(--panel-2);
   border-radius: 14px;
   padding: 14px 12px;
@@ -739,13 +735,17 @@ select {
   box-shadow: 0 0 0 1px rgba(255,255,255,0.025);
 }
 
-.achievement-label {
+.achievement-label,
+.detail-stat-label,
+.detail-year-label {
   font-size: 12px;
   opacity: 0.68;
   margin-bottom: 10px;
 }
 
-.achievement-value {
+.achievement-value,
+.detail-stat-value,
+.detail-year-value {
   font-size: 18px;
   font-weight: 800;
   line-height: 1.25;
@@ -763,7 +763,6 @@ select {
   line-height: 1.4;
 }
 
-/* Habit detail */
 .detail-modal {
   width: 760px;
   max-width: calc(100vw - 24px);
@@ -776,34 +775,6 @@ select {
 
 .detail-header h2 {
   margin-bottom: 4px;
-}
-
-.detail-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 16px;
-}
-
-.detail-stat-card,
-.detail-year-card {
-  background: var(--panel-2);
-  border-radius: 14px;
-  padding: 14px 12px;
-  text-align: left;
-}
-
-.detail-stat-label,
-.detail-year-label {
-  font-size: 12px;
-  opacity: 0.68;
-  margin-bottom: 8px;
-}
-
-.detail-stat-value,
-.detail-year-value {
-  font-size: 20px;
-  font-weight: 800;
 }
 
 .detail-reward-row {
@@ -820,7 +791,8 @@ select {
   opacity: 0.72;
 }
 
-.detail-calendar-section {
+.detail-calendar-section,
+.detail-reminder-section {
   background: var(--panel-2);
   border-radius: 14px;
   padding: 14px 12px;
@@ -832,13 +804,110 @@ select {
   margin-bottom: 10px;
 }
 
-.detail-year-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
+.reminder-modal {
+  width: 520px;
 }
 
-/* App update modal */
+.toggle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  background: var(--panel-2);
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 30px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+.slider {
+  position: absolute;
+  inset: 0;
+  background: #3a3a3a;
+  border-radius: 999px;
+  transition: 0.2s ease;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 4px;
+  top: 4px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.2s ease;
+}
+
+.switch input:checked + .slider {
+  background: var(--accent);
+}
+
+.switch input:checked + .slider::before {
+  transform: translateX(22px);
+}
+
+.days-label {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.day-pill {
+  background: var(--panel-2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 999px;
+  padding: 10px 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.day-pill.active {
+  background: rgba(20, 184, 166, 0.16);
+  border-color: rgba(20, 184, 166, 0.35);
+  color: var(--accent-soft);
+}
+
+.reminder-status-box {
+  background: var(--panel-2);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.reminder-status-title {
+  font-size: 12px;
+  opacity: 0.68;
+  margin-bottom: 6px;
+}
+
+.reminder-status-text {
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .update-modal {
   width: 520px;
 }
@@ -858,7 +927,6 @@ select {
   line-height: 1.45;
 }
 
-/* Celebration toast */
 .celebration-toast {
   position: fixed;
   left: 50%;
@@ -911,7 +979,6 @@ select {
   line-height: 1.4;
 }
 
-/* Confetti */
 .confetti-layer {
   position: fixed;
   inset: 0;
@@ -942,7 +1009,6 @@ select {
   }
 }
 
-/* Modal */
 .hidden {
   display: none !important;
 }
@@ -1040,7 +1106,6 @@ select {
   width: 380px;
 }
 
-/* Mobile sticky add button */
 .mobile-add-btn {
   display: none;
   position: fixed;
@@ -1058,7 +1123,6 @@ select {
   box-shadow: 0 10px 24px rgba(20, 184, 166, 0.24);
 }
 
-/* Responsive */
 @media (max-width: 900px) {
   .summary-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1153,9 +1217,14 @@ select {
 
   .monthly-header-row,
   .month-card-top,
-  .detail-reward-row {
+  .detail-reward-row,
+  .today-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .days-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .desktop-actions {
