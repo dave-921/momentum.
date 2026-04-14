@@ -352,6 +352,67 @@ select {
   border-radius: 999px;
 }
 
+/* Heat map */
+.heatmap-wrap {
+  margin-top: 12px;
+}
+
+.heatmap-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.heatmap-title {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.82;
+}
+
+.heatmap-subtitle {
+  font-size: 11px;
+  opacity: 0.62;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.heatmap-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.heatmap-cell {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-width: 42px;
+  border-radius: 10px;
+  background: #262626;
+  border: 1px solid rgba(255, 255, 255, 0.03);
+  transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.heatmap-cell.completed {
+  background: linear-gradient(135deg, rgba(107, 230, 117, 0.95), rgba(60, 191, 90, 0.95));
+  box-shadow: 0 0 0 1px rgba(107, 230, 117, 0.14);
+}
+
+.heatmap-cell.today {
+  outline: 2px solid rgba(255, 255, 255, 0.18);
+  outline-offset: 1px;
+}
+
+.heatmap-day-label {
+  font-size: 10px;
+  opacity: 0.64;
+}
+
 .delete-btn {
   position: absolute;
   top: 8px;
@@ -612,6 +673,11 @@ select {
 
   .habit-stats {
     font-size: 12px;
+  }
+
+  .heatmap-cell {
+    max-width: none;
+    border-radius: 8px;
   }
 
   .desktop-actions {
