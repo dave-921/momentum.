@@ -1,6 +1,6 @@
 let habits = JSON.parse(localStorage.getItem("habits")) || [];
 
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.7.0";
 const today = new Date().toISOString().split("T")[0];
 let habitIndexToDelete = null;
 let celebrationToastTimeout = null;
