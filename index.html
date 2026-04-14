@@ -141,6 +141,56 @@
         </div>
       </div>
     </div>
+
+    <div id="monthlySection" class="monthly-section hidden">
+      <div class="monthly-header-row">
+        <div class="monthly-header-text">
+          <div class="section-title">Month view</div>
+          <div class="section-subtitle" id="monthlySectionTitle">Month Year</div>
+        </div>
+
+        <div class="month-nav">
+          <button id="prevMonthBtn" class="secondary-btn small-btn month-nav-btn">←</button>
+          <button id="resetMonthBtn" class="secondary-btn small-btn month-nav-btn">Current</button>
+          <button id="nextMonthBtn" class="secondary-btn small-btn month-nav-btn">→</button>
+        </div>
+      </div>
+
+      <div id="monthlyGrid" class="monthly-grid"></div>
+    </div>
+
+    <div id="yearAchievementsSection" class="year-achievements-section hidden">
+      <div class="year-achievements-header">
+        <div class="section-title">Year achievements</div>
+        <div class="section-subtitle" id="yearAchievementsSubtitle">2026</div>
+      </div>
+
+      <div class="year-achievements-grid">
+        <div class="achievement-card">
+          <div class="achievement-label">Perfect Year</div>
+          <div class="achievement-value" id="achievementPerfectYear">Locked</div>
+          <div class="achievement-subtext" id="achievementPerfectYearSubtext">Every month needs a Perfect Month.</div>
+        </div>
+
+        <div class="achievement-card">
+          <div class="achievement-label">Momentum Year</div>
+          <div class="achievement-value" id="achievementMomentumYear">Locked</div>
+          <div class="achievement-subtext" id="achievementMomentumYearSubtext">Complete at least one habit every month.</div>
+        </div>
+
+        <div class="achievement-card">
+          <div class="achievement-label">Elite Consistency</div>
+          <div class="achievement-value" id="achievementEliteConsistency">Locked</div>
+          <div class="achievement-subtext" id="achievementEliteConsistencySubtext">Reach 80%+ of total yearly targets.</div>
+        </div>
+
+        <div class="achievement-card">
+          <div class="achievement-label">Year totals</div>
+          <div class="achievement-value" id="achievementYearTotals">0 / 0</div>
+          <div class="achievement-subtext" id="achievementYearTotalsSubtext">Perfect months / Strong months</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <button id="mobileAddBtn" class="mobile-add-btn" aria-label="Add habit">
