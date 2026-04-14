@@ -4,16 +4,43 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Momentum.</title>
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#14B8A6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Momentum.">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="app">
     <h1>Momentum.</h1>
     <p class="app-subtitle">Build consistency. One day at a time.</p>
+
+    <div id="installBanner" class="install-banner hidden">
+      <div class="install-banner-text">
+        <div class="install-banner-title">Install Momentum.</div>
+        <div class="install-banner-subtitle">Add it to your home screen for the best experience.</div>
+      </div>
+      <div class="install-banner-actions">
+        <button id="installAppBtn" class="primary-btn small-btn">Install</button>
+        <button id="dismissInstallBtn" class="secondary-btn small-btn">Later</button>
+      </div>
+    </div>
+
+    <div id="todayCard" class="today-card hidden">
+      <div class="today-header">
+        <div class="section-title">Today</div>
+        <div class="section-subtitle">What’s left to complete</div>
+      </div>
+      <div id="todayList" class="today-list"></div>
+    </div>
 
     <div id="weeklySummary" class="summary-grid">
       <div class="summary-card">
@@ -52,8 +79,8 @@
 
     <div class="chart-card">
       <div class="chart-header">
-        <div class="chart-title">This week</div>
-        <div class="chart-subtitle">Check-offs by day</div>
+        <div class="section-title">This week</div>
+        <div class="section-subtitle">Check-offs by day</div>
       </div>
 
       <div id="weeklyChart" class="weekly-chart">
@@ -90,8 +117,8 @@
 
     <div id="insightsCard" class="insights-card">
       <div class="insights-header">
-        <div class="chart-title">Insights</div>
-        <div class="chart-subtitle">Your strongest signals this week</div>
+        <div class="section-title">Insights</div>
+        <div class="section-subtitle">Your strongest signals this week</div>
       </div>
 
       <div class="insights-grid">
@@ -128,7 +155,8 @@
     </div>
   </div>
 
-  <!-- Add Habit Modal -->
+  <div id="confettiLayer" class="confetti-layer"></div>
+
   <div id="habitModal" class="modal hidden">
     <div class="modal-backdrop" id="habitModalBackdrop"></div>
 
@@ -168,7 +196,6 @@
     </div>
   </div>
 
-  <!-- Delete Confirmation Modal -->
   <div id="deleteModal" class="modal hidden">
     <div class="modal-backdrop" id="deleteModalBackdrop"></div>
 
@@ -186,5 +213,13 @@
   </div>
 
   <script src="script.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js")
+          .catch(error => console.error("Service worker registration failed:", error));
+      });
+    }
+  </script>
 </body>
 </html>
