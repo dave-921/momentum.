@@ -569,6 +569,200 @@ select {
   box-shadow: 0 0 12px rgba(20, 184, 166, 0.35);
 }
 
+/* Monthly section */
+.monthly-section {
+  width: 100%;
+  margin: 0 auto 24px;
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 16px;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.monthly-header-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.monthly-header-text {
+  text-align: left;
+}
+
+.month-nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.month-nav-btn {
+  min-width: 72px;
+}
+
+.monthly-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.month-card {
+  background: var(--panel-2);
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: left;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.025);
+}
+
+.month-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.month-habit-name {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.month-habit-meta {
+  font-size: 12px;
+  opacity: 0.72;
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.month-reward {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 8px;
+  border-radius: 999px;
+}
+
+.month-reward.perfect {
+  background: rgba(20, 184, 166, 0.16);
+  color: var(--accent-soft);
+  border: 1px solid rgba(20, 184, 166, 0.35);
+}
+
+.month-reward.strong {
+  background: rgba(255,255,255,0.08);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.month-reward.neutral {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.72);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.month-weekdays,
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.month-weekdays {
+  margin-bottom: 8px;
+}
+
+.month-weekdays div {
+  font-size: 11px;
+  opacity: 0.55;
+  text-align: center;
+  font-weight: 700;
+}
+
+.month-cell {
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  background: #262626;
+  border: 1px solid rgba(255,255,255,0.03);
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  color: rgba(255,255,255,0.82);
+}
+
+.month-cell.completed {
+  background: linear-gradient(135deg, rgba(94, 234, 212, 0.95), rgba(20, 184, 166, 0.95));
+  color: #ffffff;
+  box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.14);
+}
+
+.month-cell.today {
+  outline: 2px solid rgba(255,255,255,0.18);
+  outline-offset: 1px;
+}
+
+.month-cell.spacer {
+  background: transparent;
+  border: none;
+}
+
+/* Year achievements */
+.year-achievements-section {
+  width: 100%;
+  margin: 0 auto 24px;
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 16px;
+  box-sizing: border-box;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.year-achievements-header {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+.year-achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.achievement-card {
+  background: var(--panel-2);
+  border-radius: 14px;
+  padding: 14px 12px;
+  text-align: left;
+  min-height: 96px;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.025);
+}
+
+.achievement-label {
+  font-size: 12px;
+  opacity: 0.68;
+  margin-bottom: 10px;
+}
+
+.achievement-value {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.achievement-value.unlocked {
+  color: var(--accent-soft);
+}
+
+.achievement-subtext {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.72;
+  line-height: 1.4;
+}
+
 /* Celebration toast */
 .celebration-toast {
   position: fixed;
@@ -775,7 +969,8 @@ select {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .insights-grid {
+  .insights-grid,
+  .year-achievements-grid {
     grid-template-columns: 1fr;
   }
 
@@ -818,7 +1013,9 @@ select {
 
   .chart-card,
   .insights-card,
-  .today-card {
+  .today-card,
+  .monthly-section,
+  .year-achievements-section {
     padding: 14px 12px;
     border-radius: 14px;
   }
@@ -851,9 +1048,16 @@ select {
     font-size: 12px;
   }
 
-  .heatmap-cell {
+  .heatmap-cell,
+  .month-cell {
     max-width: none;
     border-radius: 8px;
+  }
+
+  .monthly-header-row,
+  .month-card-top {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .desktop-actions {
