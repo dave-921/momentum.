@@ -42,6 +42,19 @@
       <div id="todayList" class="today-list"></div>
     </div>
 
+    <div class="top-actions desktop-actions">
+      <button id="openModalBtn" class="primary-btn">Add Habit</button>
+    </div>
+
+    <div id="emptyState" class="empty-state hidden">
+      <div class="empty-state-icon">⚡</div>
+      <h2>No habits yet</h2>
+      <p>Momentum starts with one commitment. Create your first habit to begin building your week.</p>
+      <button id="emptyStateAddBtn" class="primary-btn">Create First Habit</button>
+    </div>
+
+    <ul id="habitList"></ul>
+
     <div id="weeklySummary" class="summary-grid">
       <div class="summary-card">
         <div class="summary-label">Completed this week</div>
@@ -63,19 +76,6 @@
         <div class="summary-value" id="summaryPerfectWeeks">0</div>
       </div>
     </div>
-
-    <div class="top-actions desktop-actions">
-      <button id="openModalBtn" class="primary-btn">Add Habit</button>
-    </div>
-
-    <div id="emptyState" class="empty-state hidden">
-      <div class="empty-state-icon">⚡</div>
-      <h2>No habits yet</h2>
-      <p>Momentum starts with one commitment. Create your first habit to begin building your week.</p>
-      <button id="emptyStateAddBtn" class="primary-btn">Create First Habit</button>
-    </div>
-
-    <ul id="habitList"></ul>
 
     <div class="chart-card">
       <div class="chart-header">
@@ -341,9 +341,9 @@
       <p class="modal-subtext">Here’s what’s new in this version.</p>
 
       <div class="update-list">
+        <div class="update-item">Habits now sit directly under the Today section for faster access</div>
         <div class="update-item">Habit detail view with deeper stats and rewards</div>
         <div class="update-item">Monthly navigation and year achievements</div>
-        <div class="update-item">Smoother long-term tracking for every habit</div>
       </div>
 
       <div class="modal-actions">
