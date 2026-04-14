@@ -1,6 +1,6 @@
 let habits = JSON.parse(localStorage.getItem("habits")) || [];
 
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.8.0";
 const today = new Date().toISOString().split("T")[0];
 let habitIndexToDelete = null;
 let celebrationToastTimeout = null;
@@ -8,6 +8,17 @@ let deferredPrompt = null;
 let draggedHabitId = null;
 let currentMonthOffset = 0;
 let selectedHabitId = null;
+let reminderEditHabitId = null;
+
+const DAY_LABELS = {
+  0: "Sun",
+  1: "Mon",
+  2: "Tue",
+  3: "Wed",
+  4: "Thu",
+  5: "Fri",
+  6: "Sat"
+};
 
 // Add Habit modal elements
 const habitModal = document.getElementById("habitModal");
@@ -45,6 +56,20 @@ const detailMonthGrid = document.getElementById("detailMonthGrid");
 const detailPerfectMonths = document.getElementById("detailPerfectMonths");
 const detailStrongMonths = document.getElementById("detailStrongMonths");
 const detailYearConsistency = document.getElementById("detailYearConsistency");
+const detailReminderSummary = document.getElementById("detailReminderSummary");
+const openReminderModalBtn = document.getElementById("openReminderModalBtn");
+
+// Reminder modal
+const reminderModal = document.getElementById("reminderModal");
+const reminderBackdrop = document.getElementById("reminderBackdrop");
+const closeReminderModalBtn = document.getElementById("closeReminderModalBtn");
+const reminderEnabled = document.getElementById("reminderEnabled");
+const reminderTime = document.getElementById("reminderTime");
+const reminderDaysGrid = document.getElementById("reminderDaysGrid");
+const requestNotificationPermissionBtn = document.getElementById("requestNotificationPermissionBtn");
+const saveReminderBtn = document.getElementById("saveReminderBtn");
+const notificationPermissionStatus = document.getElementById("notificationPermissionStatus");
+const notificationSettingsBtn = document.getElementById("notificationSettingsBtn");
 
 // App update modal
 const appUpdateModal = document.getElementById("appUpdateModal");
@@ -96,7 +121,6 @@ const celebrationToast = document.getElementById("celebrationToast");
 const celebrationToastMessage = document.getElementById("celebrationToastMessage");
 const confettiLayer = document.getElementById("confettiLayer");
 
-// Insights
 const insightLongestStreak = document.getElementById("insightLongestStreak");
 const insightLongestStreakSubtext = document.getElementById("insightLongestStreakSubtext");
 const insightMostConsistent = document.getElementById("insightMostConsistent");
@@ -221,27 +245,19 @@ function getYearStats(year) {
 
     habits.forEach(habit => {
       const reward = getMonthRewardStatus(habit, year, month);
-      if (reward.completedDays > 0) {
-        monthHasAnyCompletion = true;
-      }
+      if (reward.completedDays > 0) monthHasAnyCompletion = true;
       if (reward.perfect) {
         monthHasPerfectHabit = true;
         perfectMonthsTotal += 1;
       }
-      if (reward.strong) {
-        strongMonthsTotal += 1;
-      }
+      if (reward.strong) strongMonthsTotal += 1;
 
       eliteCompleted += reward.completedDays;
       eliteTarget += reward.targetDaysForMonth;
     });
 
-    if (monthHasAnyCompletion) {
-      activeMonthsCount += 1;
-    }
-    if (!monthHasPerfectHabit) {
-      everyMonthHasPerfect = false;
-    }
+    if (monthHasAnyCompletion) activeMonthsCount += 1;
+    if (!monthHasPerfectHabit) everyMonthHasPerfect = false;
   }
 
   const eliteRatio = eliteTarget > 0 ? eliteCompleted / eliteTarget : 0;
@@ -279,52 +295,29 @@ function getSingleHabitYearStats(habit, year) {
 }
 
 function ensureHabitDefaults(habit, currentWeek) {
-  if (!habit.id) {
-    habit.id = createId();
+  if (!habit.id) habit.id = createId();
+  if (habit.order === undefined) habit.order = 999999;
+  if (!habit.weekKey) habit.weekKey = currentWeek;
+  if (habit.targetDays === undefined) habit.targetDays = 1;
+  if (habit.completedDays === undefined) habit.completedDays = 0;
+  if (habit.total === undefined) habit.total = 0;
+  if (habit.streak === undefined) habit.streak = 0;
+  if (habit.doneToday === undefined) habit.doneToday = false;
+  if (!Array.isArray(habit.weekHistory) || habit.weekHistory.length !== 7) habit.weekHistory = getEmptyWeekHistory();
+  if (habit.perfectWeeks === undefined) habit.perfectWeeks = 0;
+  if (habit.countedPerfectWeek === undefined) habit.countedPerfectWeek = false;
+  if (!habit.history || typeof habit.history !== "object" || Array.isArray(habit.history)) habit.history = {};
+
+  if (!habit.reminder || typeof habit.reminder !== "object" || Array.isArray(habit.reminder)) {
+    habit.reminder = {
+      enabled: false,
+      time: "19:00",
+      days: []
+    };
   }
 
-  if (habit.order === undefined) {
-    habit.order = 999999;
-  }
-
-  if (!habit.weekKey) {
-    habit.weekKey = currentWeek;
-  }
-
-  if (habit.targetDays === undefined) {
-    habit.targetDays = 1;
-  }
-
-  if (habit.completedDays === undefined) {
-    habit.completedDays = 0;
-  }
-
-  if (habit.total === undefined) {
-    habit.total = 0;
-  }
-
-  if (habit.streak === undefined) {
-    habit.streak = 0;
-  }
-
-  if (habit.doneToday === undefined) {
-    habit.doneToday = false;
-  }
-
-  if (!Array.isArray(habit.weekHistory) || habit.weekHistory.length !== 7) {
-    habit.weekHistory = getEmptyWeekHistory();
-  }
-
-  if (habit.perfectWeeks === undefined) {
-    habit.perfectWeeks = 0;
-  }
-
-  if (habit.countedPerfectWeek === undefined) {
-    habit.countedPerfectWeek = false;
-  }
-
-  if (!habit.history || typeof habit.history !== "object" || Array.isArray(habit.history)) {
-    habit.history = {};
+  if (!Array.isArray(habit.reminder.days)) {
+    habit.reminder.days = [];
   }
 }
 
@@ -334,9 +327,7 @@ function resetHabitPeriods() {
   habits.forEach((habit, index) => {
     ensureHabitDefaults(habit, currentWeek);
 
-    if (habit.order === 999999) {
-      habit.order = index;
-    }
+    if (habit.order === 999999) habit.order = index;
 
     if (habit.weekKey !== currentWeek) {
       const hitTargetLastWeek = habit.completedDays >= habit.targetDays;
@@ -360,11 +351,100 @@ function resetHabitPeriods() {
 
 function getSortedHabits() {
   return [...habits].sort((a, b) => {
-    if (a.doneToday !== b.doneToday) {
-      return Number(a.doneToday) - Number(b.doneToday);
-    }
+    if (a.doneToday !== b.doneToday) return Number(a.doneToday) - Number(b.doneToday);
     return (a.order ?? 0) - (b.order ?? 0);
   });
+}
+
+function getReminderSummary(reminder) {
+  if (!reminder || !reminder.enabled) return "No reminder set";
+  const daysText = reminder.days.length
+    ? reminder.days.map(day => DAY_LABELS[day]).join(", ")
+    : "No days selected";
+  return `${daysText} at ${reminder.time}`;
+}
+
+function updateNotificationPermissionStatus() {
+  if (!("Notification" in window)) {
+    notificationPermissionStatus.textContent = "Notifications are not supported on this device.";
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    notificationPermissionStatus.textContent = "Notifications enabled";
+  } else if (Notification.permission === "denied") {
+    notificationPermissionStatus.textContent = "Notifications blocked in browser settings";
+  } else {
+    notificationPermissionStatus.textContent = "Notifications not enabled yet";
+  }
+}
+
+async function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    updateNotificationPermissionStatus();
+    return;
+  }
+
+  const result = await Notification.requestPermission();
+  updateNotificationPermissionStatus();
+
+  if (result === "granted") {
+    showCelebrationToast("Notifications enabled for Momentum.");
+  }
+}
+
+async function sendTestNotification() {
+  if (!("serviceWorker" in navigator) || !("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  const registration = await navigator.serviceWorker.ready;
+  await registration.showNotification("Momentum.", {
+    body: "Reminders are enabled. You’re ready for habit notifications.",
+    icon: "icon-192.png",
+    badge: "icon-192.png",
+    data: { url: "./" }
+  });
+}
+
+function openReminderModalForHabit(habitId) {
+  const habit = habits.find(h => h.id === habitId);
+  if (!habit) return;
+
+  reminderEditHabitId = habitId;
+  reminderEnabled.checked = Boolean(habit.reminder?.enabled);
+  reminderTime.value = habit.reminder?.time || "19:00";
+
+  const selectedDays = new Set(habit.reminder?.days || []);
+  reminderDaysGrid.querySelectorAll(".day-pill").forEach(btn => {
+    const day = Number(btn.dataset.day);
+    btn.classList.toggle("active", selectedDays.has(day));
+  });
+
+  updateNotificationPermissionStatus();
+  reminderModal.classList.remove("hidden");
+}
+
+function closeReminderModal() {
+  reminderEditHabitId = null;
+  reminderModal.classList.add("hidden");
+}
+
+function saveReminderSettings() {
+  const habit = habits.find(h => h.id === reminderEditHabitId);
+  if (!habit) return;
+
+  const selectedDays = [...reminderDaysGrid.querySelectorAll(".day-pill.active")].map(btn => Number(btn.dataset.day));
+
+  habit.reminder = {
+    enabled: reminderEnabled.checked,
+    time: reminderTime.value || "19:00",
+    days: selectedDays
+  };
+
+  saveHabits();
+  renderHabits();
+  renderHabitDetail();
+  closeReminderModal();
 }
 
 function updateWeeklySummary() {
@@ -373,9 +453,7 @@ function updateWeeklySummary() {
   const targetsHit = habits.filter(habit => (habit.completedDays || 0) >= (habit.targetDays || 0)).length;
   const totalPerfectWeeks = habits.reduce((sum, habit) => sum + (habit.perfectWeeks || 0), 0);
 
-  const overallProgress = totalTarget > 0
-    ? Math.round((totalCompleted / totalTarget) * 100)
-    : 0;
+  const overallProgress = totalTarget > 0 ? Math.round((totalCompleted / totalTarget) * 100) : 0;
 
   summaryCompleted.textContent = totalCompleted;
   summaryTargetsHit.textContent = `${targetsHit}/${habits.length}`;
@@ -398,7 +476,6 @@ function updateWeeklyChart() {
   weeklyTotals.forEach((value, index) => {
     const bar = document.getElementById(`bar-${index}`);
     if (!bar) return;
-
     const heightPercent = Math.min((value / maxPerDay) * 100, 100);
     bar.style.height = `${heightPercent}%`;
     bar.title = `${value} completion${value === 1 ? "" : "s"}`;
@@ -417,9 +494,7 @@ function updateInsights() {
   }
 
   const longestStreakHabit = habits.reduce((best, habit) => {
-    if (!best || (habit.streak || 0) > (best.streak || 0)) {
-      return habit;
-    }
+    if (!best || (habit.streak || 0) > (best.streak || 0)) return habit;
     return best;
   }, null);
 
@@ -720,6 +795,8 @@ function renderHabitDetail() {
   detailPerfectMonths.textContent = `${yearStats.perfectMonths}`;
   detailStrongMonths.textContent = `${yearStats.strongMonths}`;
   detailYearConsistency.textContent = `${Math.round(yearStats.ratio * 100)}%`;
+
+  detailReminderSummary.textContent = getReminderSummary(habit.reminder);
 }
 
 function renderHabits() {
@@ -849,7 +926,12 @@ function addHabit(name, targetDays) {
     weekHistory: getEmptyWeekHistory(),
     history: {},
     perfectWeeks: 0,
-    countedPerfectWeek: false
+    countedPerfectWeek: false,
+    reminder: {
+      enabled: false,
+      time: "19:00",
+      days: []
+    }
   });
 
   saveHabits();
@@ -1039,7 +1121,6 @@ function closeAppUpdateModal() {
   appUpdateModal.classList.add("hidden");
 }
 
-// Install prompt handling
 window.addEventListener("beforeinstallprompt", event => {
   event.preventDefault();
   deferredPrompt = event;
@@ -1068,7 +1149,6 @@ window.addEventListener("appinstalled", () => {
   deferredPrompt = null;
 });
 
-// Month navigation
 prevMonthBtn.addEventListener("click", () => {
   currentMonthOffset -= 1;
   renderHabits();
@@ -1084,7 +1164,6 @@ resetMonthBtn.addEventListener("click", () => {
   renderHabits();
 });
 
-// Add Habit modal events
 openModalBtn.addEventListener("click", openHabitModal);
 mobileAddBtn.addEventListener("click", openHabitModal);
 emptyStateAddBtn.addEventListener("click", openHabitModal);
@@ -1092,11 +1171,36 @@ closeModalBtn.addEventListener("click", closeHabitModal);
 cancelModalBtn.addEventListener("click", closeHabitModal);
 habitModalBackdrop.addEventListener("click", closeHabitModal);
 
-// Habit detail modal events
 closeHabitDetailBtn.addEventListener("click", closeHabitDetail);
 habitDetailBackdrop.addEventListener("click", closeHabitDetail);
 
-// App update modal events
+openReminderModalBtn.addEventListener("click", () => {
+  if (selectedHabitId) openReminderModalForHabit(selectedHabitId);
+});
+
+notificationSettingsBtn.addEventListener("click", async () => {
+  await requestNotificationPermission();
+  if (Notification.permission === "granted") {
+    await sendTestNotification();
+  }
+});
+
+closeReminderModalBtn.addEventListener("click", closeReminderModal);
+reminderBackdrop.addEventListener("click", closeReminderModal);
+requestNotificationPermissionBtn.addEventListener("click", async () => {
+  await requestNotificationPermission();
+  if (Notification.permission === "granted") {
+    await sendTestNotification();
+  }
+});
+saveReminderBtn.addEventListener("click", saveReminderSettings);
+
+reminderDaysGrid.querySelectorAll(".day-pill").forEach(btn => {
+  btn.addEventListener("click", () => {
+    btn.classList.toggle("active");
+  });
+});
+
 closeAppUpdateBtn.addEventListener("click", closeAppUpdateModal);
 appUpdateBackdrop.addEventListener("click", closeAppUpdateModal);
 
@@ -1113,29 +1217,27 @@ habitForm.addEventListener("submit", function (event) {
   closeHabitModal();
 });
 
-// Delete modal events
 cancelDeleteBtn.addEventListener("click", closeDeleteModal);
 confirmDeleteBtn.addEventListener("click", confirmDeleteHabit);
 deleteModalBackdrop.addEventListener("click", closeDeleteModal);
 
-// Escape key closes modals
 document.addEventListener("keydown", function (event) {
   if (event.key === "Escape") {
     if (!habitModal.classList.contains("hidden")) closeHabitModal();
     if (!deleteModal.classList.contains("hidden")) closeDeleteModal();
     if (!habitDetailModal.classList.contains("hidden")) closeHabitDetail();
+    if (!reminderModal.classList.contains("hidden")) closeReminderModal();
     if (!appUpdateModal.classList.contains("hidden")) closeAppUpdateModal();
   }
 });
 
-// Make functions available to inline handlers
 window.openHabitDetailById = openHabitDetailById;
 window.openDeleteModalById = openDeleteModalById;
 window.toggleHabitById = toggleHabitById;
 
-// Init
 resetHabitPeriods();
 saveHabits();
 renderHabits();
 showInstallBanner();
 maybeShowAppUpdateModal();
+updateNotificationPermissionStatus();
