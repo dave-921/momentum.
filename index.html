@@ -207,6 +207,7 @@
 
   <div id="confettiLayer" class="confetti-layer"></div>
 
+  <!-- Create habit modal -->
   <div id="habitModal" class="modal hidden">
     <div class="modal-backdrop" id="habitModalBackdrop"></div>
 
@@ -246,6 +247,7 @@
     </div>
   </div>
 
+  <!-- Delete habit modal -->
   <div id="deleteModal" class="modal hidden">
     <div class="modal-backdrop" id="deleteModalBackdrop"></div>
 
@@ -258,6 +260,94 @@
       <div class="modal-actions">
         <button type="button" id="cancelDeleteBtn" class="secondary-btn">Cancel</button>
         <button type="button" id="confirmDeleteBtn" class="danger-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Habit detail modal -->
+  <div id="habitDetailModal" class="modal hidden">
+    <div class="modal-backdrop" id="habitDetailBackdrop"></div>
+
+    <div class="modal-content detail-modal">
+      <button id="closeHabitDetailBtn" class="modal-close" aria-label="Close habit detail">✕</button>
+
+      <div class="detail-header">
+        <div>
+          <h2 id="detailHabitName">Habit</h2>
+          <p class="modal-subtext" id="detailHabitSubtitle">Long-term progress and rewards</p>
+        </div>
+      </div>
+
+      <div class="detail-stats-grid">
+        <div class="detail-stat-card">
+          <div class="detail-stat-label">This week</div>
+          <div class="detail-stat-value" id="detailWeekProgress">0/0</div>
+        </div>
+        <div class="detail-stat-card">
+          <div class="detail-stat-label">Streak</div>
+          <div class="detail-stat-value" id="detailStreak">0</div>
+        </div>
+        <div class="detail-stat-card">
+          <div class="detail-stat-label">Total</div>
+          <div class="detail-stat-value" id="detailTotal">0</div>
+        </div>
+        <div class="detail-stat-card">
+          <div class="detail-stat-label">Perfect weeks</div>
+          <div class="detail-stat-value" id="detailPerfectWeeks">0</div>
+        </div>
+      </div>
+
+      <div class="detail-reward-row">
+        <div id="detailMonthReward" class="month-reward neutral">Building month</div>
+        <div class="detail-reward-meta" id="detailMonthRewardMeta">0 / 0 target completions this month</div>
+      </div>
+
+      <div class="detail-calendar-section">
+        <div class="detail-calendar-header">
+          <div class="section-title">Habit month view</div>
+          <div class="section-subtitle" id="detailMonthLabel">Month Year</div>
+        </div>
+
+        <div class="month-weekdays">
+          <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+        </div>
+
+        <div id="detailMonthGrid" class="month-grid"></div>
+      </div>
+
+      <div class="detail-year-grid">
+        <div class="detail-year-card">
+          <div class="detail-year-label">Perfect months</div>
+          <div class="detail-year-value" id="detailPerfectMonths">0</div>
+        </div>
+        <div class="detail-year-card">
+          <div class="detail-year-label">Strong months</div>
+          <div class="detail-year-value" id="detailStrongMonths">0</div>
+        </div>
+        <div class="detail-year-card">
+          <div class="detail-year-label">Year consistency</div>
+          <div class="detail-year-value" id="detailYearConsistency">0%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- App update modal -->
+  <div id="appUpdateModal" class="modal hidden">
+    <div class="modal-backdrop" id="appUpdateBackdrop"></div>
+
+    <div class="modal-content update-modal">
+      <h2>Momentum. just got better</h2>
+      <p class="modal-subtext">Here’s what’s new in this version.</p>
+
+      <div class="update-list">
+        <div class="update-item">Habit detail view with deeper stats and rewards</div>
+        <div class="update-item">Monthly navigation and year achievements</div>
+        <div class="update-item">Smoother long-term tracking for every habit</div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="closeAppUpdateBtn" class="primary-btn">Got it</button>
       </div>
     </div>
   </div>
