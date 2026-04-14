@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Momentum</title>
+  <title>Momentum.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
 </head>
 <body>
   <div class="app">
-    <h1>Momentum</h1>
+    <h1>Momentum.</h1>
     <p class="app-subtitle">Build consistency. One day at a time.</p>
 
     <div id="weeklySummary" class="summary-grid">
@@ -35,6 +35,19 @@
         <div class="summary-value" id="summaryPerfectWeeks">0</div>
       </div>
     </div>
+
+    <div class="top-actions desktop-actions">
+      <button id="openModalBtn" class="primary-btn">Add Habit</button>
+    </div>
+
+    <div id="emptyState" class="empty-state hidden">
+      <div class="empty-state-icon">⚡</div>
+      <h2>No habits yet</h2>
+      <p>Momentum starts with one commitment. Create your first habit to begin building your week.</p>
+      <button id="emptyStateAddBtn" class="primary-btn">Create First Habit</button>
+    </div>
+
+    <ul id="habitList"></ul>
 
     <div class="chart-card">
       <div class="chart-header">
@@ -100,19 +113,6 @@
         </div>
       </div>
     </div>
-
-    <div class="top-actions desktop-actions">
-      <button id="openModalBtn" class="primary-btn">Add Habit</button>
-    </div>
-
-    <div id="emptyState" class="empty-state hidden">
-      <div class="empty-state-icon">⚡</div>
-      <h2>No habits yet</h2>
-      <p>Momentum starts with one commitment. Create your first habit to begin building your week.</p>
-      <button id="emptyStateAddBtn" class="primary-btn">Create First Habit</button>
-    </div>
-
-    <ul id="habitList"></ul>
   </div>
 
   <button id="mobileAddBtn" class="mobile-add-btn" aria-label="Add habit">
