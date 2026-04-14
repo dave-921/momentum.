@@ -1,4 +1,4 @@
-const CACHE_NAME = "momentum-cache-v7";
+const CACHE_NAME = "momentum-cache-v8";
 
 const URLS_TO_CACHE = [
   "./",
@@ -34,8 +34,26 @@ self.addEventListener("activate", event => {
 
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(cachedResponse => {
-      return cachedResponse || fetch(event.request);
+    caches.match(event.request).then(cachedResponse => cachedResponse || fetch(event.request))
+  );
+});
+
+self.addEventListener("notificationclick", event => {
+  event.notification.close();
+
+  const targetUrl = event.notification?.data?.url || "./";
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(windowClients => {
+      for (const client of windowClients) {
+        if ("focus" in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
     })
   );
 });
