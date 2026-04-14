@@ -5,6 +5,7 @@ let habitIndexToDelete = null;
 let celebrationToastTimeout = null;
 let deferredPrompt = null;
 let draggedHabitId = null;
+let currentMonthOffset = 0;
 
 // Add Habit modal elements
 const habitModal = document.getElementById("habitModal");
@@ -40,6 +41,26 @@ const todayCard = document.getElementById("todayCard");
 const todayList = document.getElementById("todayList");
 const habitList = document.getElementById("habitList");
 
+// Monthly section
+const monthlySection = document.getElementById("monthlySection");
+const monthlyGrid = document.getElementById("monthlyGrid");
+const monthlySectionTitle = document.getElementById("monthlySectionTitle");
+const prevMonthBtn = document.getElementById("prevMonthBtn");
+const nextMonthBtn = document.getElementById("nextMonthBtn");
+const resetMonthBtn = document.getElementById("resetMonthBtn");
+
+// Year achievements
+const yearAchievementsSection = document.getElementById("yearAchievementsSection");
+const yearAchievementsSubtitle = document.getElementById("yearAchievementsSubtitle");
+const achievementPerfectYear = document.getElementById("achievementPerfectYear");
+const achievementPerfectYearSubtext = document.getElementById("achievementPerfectYearSubtext");
+const achievementMomentumYear = document.getElementById("achievementMomentumYear");
+const achievementMomentumYearSubtext = document.getElementById("achievementMomentumYearSubtext");
+const achievementEliteConsistency = document.getElementById("achievementEliteConsistency");
+const achievementEliteConsistencySubtext = document.getElementById("achievementEliteConsistencySubtext");
+const achievementYearTotals = document.getElementById("achievementYearTotals");
+const achievementYearTotalsSubtext = document.getElementById("achievementYearTotalsSubtext");
+
 // Install banner
 const installBanner = document.getElementById("installBanner");
 const installAppBtn = document.getElementById("installAppBtn");
@@ -60,6 +81,14 @@ const insightClosestTargetSubtext = document.getElementById("insightClosestTarge
 
 function saveHabits() {
   localStorage.setItem("habits", JSON.stringify(habits));
+}
+
+function createId() {
+  return `habit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function formatDateKey(date) {
+  return date.toISOString().split("T")[0];
 }
 
 function getWeekKey(date = new Date()) {
@@ -91,14 +120,6 @@ function getEmptyWeekHistory() {
   return [0, 0, 0, 0, 0, 0, 0];
 }
 
-function getEmptyRecentHistory() {
-  return {};
-}
-
-function formatDateKey(date) {
-  return date.toISOString().split("T")[0];
-}
-
 function getLast7Days() {
   const days = [];
   const labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -118,8 +139,97 @@ function getLast7Days() {
   return days;
 }
 
-function createId() {
-  return `habit-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+function getMonthInfo(year, month) {
+  const first = new Date(year, month, 1);
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayIndex = (first.getDay() + 6) % 7;
+  const label = first.toLocaleString("en-GB", { month: "long", year: "numeric" });
+  return { year, month, daysInMonth, firstDayIndex, label };
+}
+
+function getViewedMonthInfo() {
+  const base = new Date();
+  base.setDate(1);
+  base.setMonth(base.getMonth() + currentMonthOffset);
+  return getMonthInfo(base.getFullYear(), base.getMonth());
+}
+
+function getWeeksInMonth(year, month) {
+  const monthInfo = getMonthInfo(year, month);
+  const totalCells = monthInfo.firstDayIndex + monthInfo.daysInMonth;
+  return Math.ceil(totalCells / 7);
+}
+
+function countCompletedDaysInMonth(habit, year, month) {
+  return Object.keys(habit.history || {}).filter(key => {
+    const d = new Date(`${key}T12:00:00`);
+    return d.getFullYear() === year && d.getMonth() === month;
+  }).length;
+}
+
+function getMonthRewardStatus(habit, year, month) {
+  const completedDays = countCompletedDaysInMonth(habit, year, month);
+  const weeksInMonth = getWeeksInMonth(year, month);
+  const targetDaysForMonth = habit.targetDays * weeksInMonth;
+  const ratio = targetDaysForMonth > 0 ? completedDays / targetDaysForMonth : 0;
+
+  return {
+    completedDays,
+    targetDaysForMonth,
+    ratio,
+    perfect: targetDaysForMonth > 0 && completedDays >= targetDaysForMonth,
+    strong: targetDaysForMonth > 0 && ratio >= 0.8
+  };
+}
+
+function getYearStats(year) {
+  let perfectMonthsTotal = 0;
+  let strongMonthsTotal = 0;
+  let activeMonthsCount = 0;
+  let eliteCompleted = 0;
+  let eliteTarget = 0;
+  let everyMonthHasPerfect = true;
+
+  for (let month = 0; month < 12; month += 1) {
+    let monthHasAnyCompletion = false;
+    let monthHasPerfectHabit = false;
+
+    habits.forEach(habit => {
+      const reward = getMonthRewardStatus(habit, year, month);
+      if (reward.completedDays > 0) {
+        monthHasAnyCompletion = true;
+      }
+      if (reward.perfect) {
+        monthHasPerfectHabit = true;
+        perfectMonthsTotal += 1;
+      }
+      if (reward.strong) {
+        strongMonthsTotal += 1;
+      }
+
+      eliteCompleted += reward.completedDays;
+      eliteTarget += reward.targetDaysForMonth;
+    });
+
+    if (monthHasAnyCompletion) {
+      activeMonthsCount += 1;
+    }
+    if (!monthHasPerfectHabit) {
+      everyMonthHasPerfect = false;
+    }
+  }
+
+  const eliteRatio = eliteTarget > 0 ? eliteCompleted / eliteTarget : 0;
+
+  return {
+    perfectMonthsTotal,
+    strongMonthsTotal,
+    activeMonthsCount,
+    eliteRatio,
+    perfectYearUnlocked: habits.length > 0 && everyMonthHasPerfect,
+    momentumYearUnlocked: activeMonthsCount === 12,
+    eliteConsistencyUnlocked: eliteRatio >= 0.8
+  };
 }
 
 function ensureHabitDefaults(habit, currentWeek) {
@@ -167,19 +277,9 @@ function ensureHabitDefaults(habit, currentWeek) {
     habit.countedPerfectWeek = false;
   }
 
-  if (!habit.recentHistory || typeof habit.recentHistory !== "object" || Array.isArray(habit.recentHistory)) {
-    habit.recentHistory = getEmptyRecentHistory();
+  if (!habit.history || typeof habit.history !== "object" || Array.isArray(habit.history)) {
+    habit.history = {};
   }
-}
-
-function pruneRecentHistory(habit) {
-  const last7Keys = new Set(getLast7Days().map(day => day.key));
-
-  Object.keys(habit.recentHistory).forEach(key => {
-    if (!last7Keys.has(key)) {
-      delete habit.recentHistory[key];
-    }
-  });
 }
 
 function resetHabitPeriods() {
@@ -209,8 +309,6 @@ function resetHabitPeriods() {
     if (habit.lastCompleted !== today) {
       habit.doneToday = false;
     }
-
-    pruneRecentHistory(habit);
   });
 }
 
@@ -364,7 +462,7 @@ function renderHeatmap(habit) {
   const days = getLast7Days();
 
   const cells = days.map(day => {
-    const completed = Boolean(habit.recentHistory?.[day.key]);
+    const completed = Boolean(habit.history?.[day.key]);
     const classes = ["heatmap-cell", completed ? "completed" : "", day.isToday ? "today" : ""].filter(Boolean).join(" ");
     const title = `${day.label} ${day.key}: ${completed ? "completed" : "not completed"}`;
 
@@ -387,6 +485,105 @@ function renderHeatmap(habit) {
       </div>
     </div>
   `;
+}
+
+function renderMonthlyCalendar() {
+  if (habits.length === 0) {
+    monthlySection.classList.add("hidden");
+    monthlyGrid.innerHTML = "";
+    return;
+  }
+
+  const monthInfo = getViewedMonthInfo();
+  monthlySectionTitle.textContent = monthInfo.label;
+  monthlySection.classList.remove("hidden");
+
+  const sorted = getSortedHabits();
+
+  monthlyGrid.innerHTML = sorted.map(habit => {
+    const cells = [];
+
+    for (let i = 0; i < monthInfo.firstDayIndex; i += 1) {
+      cells.push(`<div class="month-cell spacer"></div>`);
+    }
+
+    for (let day = 1; day <= monthInfo.daysInMonth; day += 1) {
+      const date = new Date(monthInfo.year, monthInfo.month, day, 12, 0, 0);
+      const key = formatDateKey(date);
+      const completed = Boolean(habit.history?.[key]);
+      const isToday = key === today;
+
+      cells.push(`
+        <div class="month-cell ${completed ? "completed" : ""} ${isToday ? "today" : ""}" title="${key}: ${completed ? "completed" : "not completed"}">
+          ${day}
+        </div>
+      `);
+    }
+
+    const reward = getMonthRewardStatus(habit, monthInfo.year, monthInfo.month);
+
+    let rewardBadge = `<span class="month-reward neutral">Building month</span>`;
+    if (reward.perfect) {
+      rewardBadge = `<span class="month-reward perfect">🏆 Perfect Month</span>`;
+    } else if (reward.strong) {
+      rewardBadge = `<span class="month-reward strong">✨ Strong Month</span>`;
+    }
+
+    return `
+      <div class="month-card">
+        <div class="month-card-top">
+          <div>
+            <div class="month-habit-name">${habit.name}</div>
+            <div class="month-habit-meta">
+              ${reward.completedDays}/${reward.targetDaysForMonth} target completions this month
+            </div>
+          </div>
+          ${rewardBadge}
+        </div>
+
+        <div class="month-weekdays">
+          <div>M</div><div>T</div><div>W</div><div>T</div><div>F</div><div>S</div><div>S</div>
+        </div>
+
+        <div class="month-grid">
+          ${cells.join("")}
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function updateYearAchievements() {
+  if (habits.length === 0) {
+    yearAchievementsSection.classList.add("hidden");
+    return;
+  }
+
+  const viewed = getViewedMonthInfo();
+  const yearStats = getYearStats(viewed.year);
+
+  yearAchievementsSection.classList.remove("hidden");
+  yearAchievementsSubtitle.textContent = `${viewed.year}`;
+
+  achievementPerfectYear.textContent = yearStats.perfectYearUnlocked ? "Unlocked" : "Locked";
+  achievementPerfectYear.classList.toggle("unlocked", yearStats.perfectYearUnlocked);
+  achievementPerfectYearSubtext.textContent = yearStats.perfectYearUnlocked
+    ? "Every month has at least one Perfect Month."
+    : "Get at least one Perfect Month in every month.";
+
+  achievementMomentumYear.textContent = yearStats.momentumYearUnlocked ? "Unlocked" : "Locked";
+  achievementMomentumYear.classList.toggle("unlocked", yearStats.momentumYearUnlocked);
+  achievementMomentumYearSubtext.textContent = yearStats.momentumYearUnlocked
+    ? "You completed at least one habit every month."
+    : `${yearStats.activeMonthsCount}/12 active months so far.`;
+
+  achievementEliteConsistency.textContent = yearStats.eliteConsistencyUnlocked ? "Unlocked" : "Locked";
+  achievementEliteConsistency.classList.toggle("unlocked", yearStats.eliteConsistencyUnlocked);
+  achievementEliteConsistencySubtext.textContent = `${Math.round(yearStats.eliteRatio * 100)}% yearly consistency`;
+
+  achievementYearTotals.textContent = `${yearStats.perfectMonthsTotal} / ${yearStats.strongMonthsTotal}`;
+  achievementYearTotals.classList.remove("unlocked");
+  achievementYearTotalsSubtext.textContent = "Perfect months / Strong months";
 }
 
 function updateEmptyState() {
@@ -496,6 +693,8 @@ function renderHabits() {
   updateWeeklyChart();
   updateInsights();
   updateTodaySection();
+  renderMonthlyCalendar();
+  updateYearAchievements();
   updateEmptyState();
 }
 
@@ -546,7 +745,7 @@ function addHabit(name, targetDays) {
     lastCompleted: null,
     weekKey: currentWeekKey(),
     weekHistory: getEmptyWeekHistory(),
-    recentHistory: getEmptyRecentHistory(),
+    history: {},
     perfectWeeks: 0,
     countedPerfectWeek: false
   });
@@ -571,10 +770,10 @@ function maybeAwardPerfectWeek(habit) {
   return newlyUnlocked;
 }
 
-function showCelebrationToast(habitName) {
+function showCelebrationToast(message) {
   clearTimeout(celebrationToastTimeout);
 
-  celebrationToastMessage.textContent = `"${habitName}" hit its weekly target.`;
+  celebrationToastMessage.textContent = message;
   celebrationToast.classList.remove("hidden");
 
   requestAnimationFrame(() => {
@@ -602,6 +801,9 @@ function toggleHabitById(habitId) {
 
   if (!habit || !card) return;
 
+  const viewed = getViewedMonthInfo();
+  const previousMonthStatus = getMonthRewardStatus(habit, viewed.year, viewed.month);
+
   const fill = card.querySelector(".progress-fill");
   const stats = card.querySelector(".habit-stats");
   const topRow = card.querySelector(".habit-top-row");
@@ -621,7 +823,7 @@ function toggleHabitById(habitId) {
     habit.completedDays += 1;
     habit.total += 1;
     habit.weekHistory[dayIndex] += 1;
-    habit.recentHistory[today] = true;
+    habit.history[today] = true;
 
     const unlockedPerfectWeek = maybeAwardPerfectWeek(habit);
     const newPercent = Math.min((habit.completedDays / habit.targetDays) * 100, 100);
@@ -644,7 +846,7 @@ function toggleHabitById(habitId) {
 
     if (unlockedPerfectWeek) {
       triggerTargetHitAnimation(card);
-      showCelebrationToast(habit.name);
+      showCelebrationToast(`"${habit.name}" hit its weekly target.`);
       triggerConfetti();
     }
   } else {
@@ -652,7 +854,7 @@ function toggleHabitById(habitId) {
     habit.completedDays = Math.max(habit.completedDays - 1, 0);
     habit.total = Math.max(habit.total - 1, 0);
     habit.weekHistory[dayIndex] = Math.max((habit.weekHistory[dayIndex] || 0) - 1, 0);
-    delete habit.recentHistory[today];
+    delete habit.history[today];
 
     maybeAwardPerfectWeek(habit);
 
@@ -669,6 +871,17 @@ function toggleHabitById(habitId) {
 
     fill.style.transition = "none";
     fill.style.width = `${newPercent}%`;
+  }
+
+  const currentMonthStatus = getMonthRewardStatus(habit, viewed.year, viewed.month);
+
+  if (!previousMonthStatus.strong && currentMonthStatus.strong) {
+    showCelebrationToast(`"${habit.name}" unlocked a Strong Month.`);
+  }
+
+  if (!previousMonthStatus.perfect && currentMonthStatus.perfect) {
+    showCelebrationToast(`"${habit.name}" unlocked a Perfect Month.`);
+    triggerConfetti();
   }
 
   saveHabits();
@@ -739,6 +952,22 @@ dismissInstallBtn.addEventListener("click", () => {
 window.addEventListener("appinstalled", () => {
   hideInstallBanner(true);
   deferredPrompt = null;
+});
+
+// Month navigation
+prevMonthBtn.addEventListener("click", () => {
+  currentMonthOffset -= 1;
+  renderHabits();
+});
+
+nextMonthBtn.addEventListener("click", () => {
+  currentMonthOffset += 1;
+  renderHabits();
+});
+
+resetMonthBtn.addEventListener("click", () => {
+  currentMonthOffset = 0;
+  renderHabits();
 });
 
 // Add Habit modal events
