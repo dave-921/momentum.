@@ -36,8 +36,11 @@
 
     <div id="todayCard" class="today-card hidden">
       <div class="today-header">
-        <div class="section-title">Today</div>
-        <div class="section-subtitle">What’s left to complete</div>
+        <div>
+          <div class="section-title">Today</div>
+          <div class="section-subtitle">What’s left to complete</div>
+        </div>
+        <button id="notificationSettingsBtn" class="secondary-btn small-btn">Enable reminders</button>
       </div>
       <div id="todayList" class="today-list"></div>
     </div>
@@ -302,6 +305,14 @@
         <div class="detail-reward-meta" id="detailMonthRewardMeta">0 / 0 target completions this month</div>
       </div>
 
+      <div class="detail-reminder-section">
+        <div class="detail-calendar-header">
+          <div class="section-title">Reminders</div>
+          <div class="section-subtitle" id="detailReminderSummary">No reminder set</div>
+        </div>
+        <button id="openReminderModalBtn" class="secondary-btn small-btn">Edit reminder</button>
+      </div>
+
       <div class="detail-calendar-section">
         <div class="detail-calendar-header">
           <div class="section-title">Habit month view</div>
@@ -332,6 +343,50 @@
     </div>
   </div>
 
+  <!-- Reminder modal -->
+  <div id="reminderModal" class="modal hidden">
+    <div class="modal-backdrop" id="reminderBackdrop"></div>
+
+    <div class="modal-content reminder-modal">
+      <button id="closeReminderModalBtn" class="modal-close" aria-label="Close reminder modal">✕</button>
+
+      <h2>Habit reminder</h2>
+      <p class="modal-subtext">Choose when Momentum. should remind you about this habit.</p>
+
+      <div class="toggle-row">
+        <span>Enable reminder</span>
+        <label class="switch">
+          <input type="checkbox" id="reminderEnabled">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <label for="reminderTime">Reminder time</label>
+      <input type="time" id="reminderTime" value="19:00">
+
+      <div class="days-label">Reminder days</div>
+      <div class="days-grid" id="reminderDaysGrid">
+        <button type="button" class="day-pill" data-day="1">Mon</button>
+        <button type="button" class="day-pill" data-day="2">Tue</button>
+        <button type="button" class="day-pill" data-day="3">Wed</button>
+        <button type="button" class="day-pill" data-day="4">Thu</button>
+        <button type="button" class="day-pill" data-day="5">Fri</button>
+        <button type="button" class="day-pill" data-day="6">Sat</button>
+        <button type="button" class="day-pill" data-day="0">Sun</button>
+      </div>
+
+      <div class="reminder-status-box">
+        <div class="reminder-status-title">Notification status</div>
+        <div class="reminder-status-text" id="notificationPermissionStatus">Not checked yet</div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" id="requestNotificationPermissionBtn" class="secondary-btn">Enable notifications</button>
+        <button type="button" id="saveReminderBtn" class="primary-btn">Save reminder</button>
+      </div>
+    </div>
+  </div>
+
   <!-- App update modal -->
   <div id="appUpdateModal" class="modal hidden">
     <div class="modal-backdrop" id="appUpdateBackdrop"></div>
@@ -341,9 +396,9 @@
       <p class="modal-subtext">Here’s what’s new in this version.</p>
 
       <div class="update-list">
-        <div class="update-item">Habits now sit directly under the Today section for faster access</div>
-        <div class="update-item">Habit detail view with deeper stats and rewards</div>
-        <div class="update-item">Monthly navigation and year achievements</div>
+        <div class="update-item">Reminder settings for each habit</div>
+        <div class="update-item">Notification permission flow built into the app</div>
+        <div class="update-item">Push-ready structure for real reminders next</div>
       </div>
 
       <div class="modal-actions">
