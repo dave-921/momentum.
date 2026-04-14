@@ -81,6 +81,33 @@ function getEmptyWeekHistory() {
   return [0, 0, 0, 0, 0, 0, 0];
 }
 
+function getEmptyRecentHistory() {
+  return {};
+}
+
+function formatDateKey(date) {
+  return date.toISOString().split("T")[0];
+}
+
+function getLast7Days() {
+  const days = [];
+  const labels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+  for (let i = 6; i >= 0; i -= 1) {
+    const d = new Date();
+    d.setHours(12, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+
+    days.push({
+      key: formatDateKey(d),
+      label: labels[d.getDay()],
+      isToday: formatDateKey(d) === today
+    });
+  }
+
+  return days;
+}
+
 function ensureHabitDefaults(habit, currentWeek) {
   if (!habit.weekKey) {
     habit.weekKey = currentWeek;
@@ -117,6 +144,20 @@ function ensureHabitDefaults(habit, currentWeek) {
   if (habit.countedPerfectWeek === undefined) {
     habit.countedPerfectWeek = false;
   }
+
+  if (!habit.recentHistory || typeof habit.recentHistory !== "object" || Array.isArray(habit.recentHistory)) {
+    habit.recentHistory = getEmptyRecentHistory();
+  }
+}
+
+function pruneRecentHistory(habit) {
+  const last7Keys = new Set(getLast7Days().map(day => day.key));
+
+  Object.keys(habit.recentHistory).forEach(key => {
+    if (!last7Keys.has(key)) {
+      delete habit.recentHistory[key];
+    }
+  });
 }
 
 function resetHabitPeriods() {
@@ -142,6 +183,8 @@ function resetHabitPeriods() {
     if (habit.lastCompleted !== today) {
       habit.doneToday = false;
     }
+
+    pruneRecentHistory(habit);
   });
 }
 
@@ -277,6 +320,40 @@ function getHabitBadgeHtml(habit) {
   return "";
 }
 
+function renderHeatmap(habit) {
+  const days = getLast7Days();
+
+  const cells = days.map(day => {
+    const completed = Boolean(habit.recentHistory?.[day.key]);
+    const classes = [
+      "heatmap-cell",
+      completed ? "completed" : "",
+      day.isToday ? "today" : ""
+    ].filter(Boolean).join(" ");
+
+    const title = `${day.label} ${day.key}: ${completed ? "completed" : "not completed"}`;
+
+    return `
+      <div class="heatmap-day">
+        <div class="${classes}" title="${title}"></div>
+        <div class="heatmap-day-label">${day.label.slice(0, 1)}</div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="heatmap-wrap">
+      <div class="heatmap-label-row">
+        <div class="heatmap-title">Last 7 days</div>
+        <div class="heatmap-subtitle">Recent consistency</div>
+      </div>
+      <div class="heatmap-grid">
+        ${cells}
+      </div>
+    </div>
+  `;
+}
+
 function updateEmptyState() {
   const hasHabits = habits.length > 0;
 
@@ -308,6 +385,7 @@ function renderHabits() {
 
     const progressPercent = Math.min((habit.completedDays / habit.targetDays) * 100, 100);
     const badgeHtml = getHabitBadgeHtml(habit);
+    const heatmapHtml = renderHeatmap(habit);
 
     li.innerHTML = `
       <div class="habit-content" onclick="toggleHabit(${index})">
@@ -323,6 +401,8 @@ function renderHabits() {
         <div class="progress-bar">
           <div class="progress-fill" style="width: ${progressPercent}%"></div>
         </div>
+
+        ${heatmapHtml}
       </div>
 
       <button class="delete-btn" onclick="event.stopPropagation(); openDeleteModal(${index});">
@@ -361,6 +441,7 @@ function addHabit(name, targetDays) {
     lastCompleted: null,
     weekKey: currentWeekKey(),
     weekHistory: getEmptyWeekHistory(),
+    recentHistory: getEmptyRecentHistory(),
     perfectWeeks: 0,
     countedPerfectWeek: false
   });
@@ -436,6 +517,7 @@ function toggleHabit(index) {
     habit.completedDays += 1;
     habit.total += 1;
     habit.weekHistory[dayIndex] += 1;
+    habit.recentHistory[today] = true;
 
     const unlockedPerfectWeek = maybeAwardPerfectWeek(habit);
     const newPercent = Math.min((habit.completedDays / habit.targetDays) * 100, 100);
@@ -465,6 +547,7 @@ function toggleHabit(index) {
     habit.completedDays = Math.max(habit.completedDays - 1, 0);
     habit.total = Math.max(habit.total - 1, 0);
     habit.weekHistory[dayIndex] = Math.max((habit.weekHistory[dayIndex] || 0) - 1, 0);
+    delete habit.recentHistory[today];
 
     maybeAwardPerfectWeek(habit);
 
@@ -484,15 +567,13 @@ function toggleHabit(index) {
   }
 
   saveHabits();
-  updateWeeklySummary();
-  updateWeeklyChart();
-  updateInsights();
+  renderHabits();
 }
 
 function openDeleteModal(index) {
   habitIndexToDelete = index;
   const habitName = habits[index]?.name || "this habit";
-  deleteModalText.textContent = `Delete "${habitName}" and lose its Momentum?`;
+  deleteModalText.textContent = `Delete "${habitName}" and lose its momentum?`;
   deleteModal.classList.remove("hidden");
 }
 
