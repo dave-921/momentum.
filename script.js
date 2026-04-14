@@ -1,11 +1,13 @@
 let habits = JSON.parse(localStorage.getItem("habits")) || [];
 
+const APP_VERSION = "1.6.0";
 const today = new Date().toISOString().split("T")[0];
 let habitIndexToDelete = null;
 let celebrationToastTimeout = null;
 let deferredPrompt = null;
 let draggedHabitId = null;
 let currentMonthOffset = 0;
+let selectedHabitId = null;
 
 // Add Habit modal elements
 const habitModal = document.getElementById("habitModal");
@@ -25,6 +27,29 @@ const deleteModalBackdrop = document.getElementById("deleteModalBackdrop");
 const deleteModalText = document.getElementById("deleteModalText");
 const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+
+// Habit detail modal
+const habitDetailModal = document.getElementById("habitDetailModal");
+const habitDetailBackdrop = document.getElementById("habitDetailBackdrop");
+const closeHabitDetailBtn = document.getElementById("closeHabitDetailBtn");
+const detailHabitName = document.getElementById("detailHabitName");
+const detailHabitSubtitle = document.getElementById("detailHabitSubtitle");
+const detailWeekProgress = document.getElementById("detailWeekProgress");
+const detailStreak = document.getElementById("detailStreak");
+const detailTotal = document.getElementById("detailTotal");
+const detailPerfectWeeks = document.getElementById("detailPerfectWeeks");
+const detailMonthReward = document.getElementById("detailMonthReward");
+const detailMonthRewardMeta = document.getElementById("detailMonthRewardMeta");
+const detailMonthLabel = document.getElementById("detailMonthLabel");
+const detailMonthGrid = document.getElementById("detailMonthGrid");
+const detailPerfectMonths = document.getElementById("detailPerfectMonths");
+const detailStrongMonths = document.getElementById("detailStrongMonths");
+const detailYearConsistency = document.getElementById("detailYearConsistency");
+
+// App update modal
+const appUpdateModal = document.getElementById("appUpdateModal");
+const appUpdateBackdrop = document.getElementById("appUpdateBackdrop");
+const closeAppUpdateBtn = document.getElementById("closeAppUpdateBtn");
 
 // Summary elements
 const summaryCompleted = document.getElementById("summaryCompleted");
@@ -229,6 +254,27 @@ function getYearStats(year) {
     perfectYearUnlocked: habits.length > 0 && everyMonthHasPerfect,
     momentumYearUnlocked: activeMonthsCount === 12,
     eliteConsistencyUnlocked: eliteRatio >= 0.8
+  };
+}
+
+function getSingleHabitYearStats(habit, year) {
+  let perfectMonths = 0;
+  let strongMonths = 0;
+  let completed = 0;
+  let target = 0;
+
+  for (let month = 0; month < 12; month += 1) {
+    const reward = getMonthRewardStatus(habit, year, month);
+    if (reward.perfect) perfectMonths += 1;
+    if (reward.strong) strongMonths += 1;
+    completed += reward.completedDays;
+    target += reward.targetDaysForMonth;
+  }
+
+  return {
+    perfectMonths,
+    strongMonths,
+    ratio: target > 0 ? completed / target : 0
   };
 }
 
@@ -487,6 +533,30 @@ function renderHeatmap(habit) {
   `;
 }
 
+function buildMonthCells(habit, year, month) {
+  const monthInfo = getMonthInfo(year, month);
+  const cells = [];
+
+  for (let i = 0; i < monthInfo.firstDayIndex; i += 1) {
+    cells.push(`<div class="month-cell spacer"></div>`);
+  }
+
+  for (let day = 1; day <= monthInfo.daysInMonth; day += 1) {
+    const date = new Date(year, month, day, 12, 0, 0);
+    const key = formatDateKey(date);
+    const completed = Boolean(habit.history?.[key]);
+    const isToday = key === today;
+
+    cells.push(`
+      <div class="month-cell ${completed ? "completed" : ""} ${isToday ? "today" : ""}" title="${key}: ${completed ? "completed" : "not completed"}">
+        ${day}
+      </div>
+    `);
+  }
+
+  return cells.join("");
+}
+
 function renderMonthlyCalendar() {
   if (habits.length === 0) {
     monthlySection.classList.add("hidden");
@@ -501,25 +571,6 @@ function renderMonthlyCalendar() {
   const sorted = getSortedHabits();
 
   monthlyGrid.innerHTML = sorted.map(habit => {
-    const cells = [];
-
-    for (let i = 0; i < monthInfo.firstDayIndex; i += 1) {
-      cells.push(`<div class="month-cell spacer"></div>`);
-    }
-
-    for (let day = 1; day <= monthInfo.daysInMonth; day += 1) {
-      const date = new Date(monthInfo.year, monthInfo.month, day, 12, 0, 0);
-      const key = formatDateKey(date);
-      const completed = Boolean(habit.history?.[key]);
-      const isToday = key === today;
-
-      cells.push(`
-        <div class="month-cell ${completed ? "completed" : ""} ${isToday ? "today" : ""}" title="${key}: ${completed ? "completed" : "not completed"}">
-          ${day}
-        </div>
-      `);
-    }
-
     const reward = getMonthRewardStatus(habit, monthInfo.year, monthInfo.month);
 
     let rewardBadge = `<span class="month-reward neutral">Building month</span>`;
@@ -546,7 +597,7 @@ function renderMonthlyCalendar() {
         </div>
 
         <div class="month-grid">
-          ${cells.join("")}
+          ${buildMonthCells(habit, monthInfo.year, monthInfo.month)}
         </div>
       </div>
     `;
@@ -624,6 +675,53 @@ function triggerConfetti() {
   }
 }
 
+function openHabitDetailById(habitId) {
+  selectedHabitId = habitId;
+  renderHabitDetail();
+  habitDetailModal.classList.remove("hidden");
+}
+
+function closeHabitDetail() {
+  selectedHabitId = null;
+  habitDetailModal.classList.add("hidden");
+}
+
+function renderHabitDetail() {
+  const habit = habits.find(h => h.id === selectedHabitId);
+  if (!habit) return;
+
+  const viewed = getViewedMonthInfo();
+  const monthStatus = getMonthRewardStatus(habit, viewed.year, viewed.month);
+  const yearStats = getSingleHabitYearStats(habit, viewed.year);
+
+  detailHabitName.textContent = habit.name;
+  detailHabitSubtitle.textContent = `Target: ${habit.targetDays} day${habit.targetDays === 1 ? "" : "s"} per week`;
+  detailWeekProgress.textContent = `${habit.completedDays}/${habit.targetDays}`;
+  detailStreak.textContent = `${habit.streak || 0}`;
+  detailTotal.textContent = `${habit.total || 0}`;
+  detailPerfectWeeks.textContent = `${habit.perfectWeeks || 0}`;
+
+  detailMonthLabel.textContent = viewed.label;
+  detailMonthReward.className = "month-reward neutral";
+  if (monthStatus.perfect) {
+    detailMonthReward.className = "month-reward perfect";
+    detailMonthReward.textContent = "🏆 Perfect Month";
+  } else if (monthStatus.strong) {
+    detailMonthReward.className = "month-reward strong";
+    detailMonthReward.textContent = "✨ Strong Month";
+  } else {
+    detailMonthReward.className = "month-reward neutral";
+    detailMonthReward.textContent = "Building month";
+  }
+
+  detailMonthRewardMeta.textContent = `${monthStatus.completedDays}/${monthStatus.targetDaysForMonth} target completions this month`;
+  detailMonthGrid.innerHTML = buildMonthCells(habit, viewed.year, viewed.month);
+
+  detailPerfectMonths.textContent = `${yearStats.perfectMonths}`;
+  detailStrongMonths.textContent = `${yearStats.strongMonths}`;
+  detailYearConsistency.textContent = `${Math.round(yearStats.ratio * 100)}%`;
+}
+
 function renderHabits() {
   habitList.innerHTML = "";
   const sortedHabits = getSortedHabits();
@@ -643,7 +741,7 @@ function renderHabits() {
     const heatmapHtml = renderHeatmap(habit);
 
     li.innerHTML = `
-      <div class="habit-content" onclick="toggleHabitById('${habit.id}')">
+      <div class="habit-content" onclick="openHabitDetailById('${habit.id}')">
         <div class="habit-top-row">
           <div class="habit-name">${habit.name}</div>
           ${badgeHtml}
@@ -696,6 +794,10 @@ function renderHabits() {
   renderMonthlyCalendar();
   updateYearAchievements();
   updateEmptyState();
+
+  if (selectedHabitId) {
+    renderHabitDetail();
+  }
 }
 
 function reorderHabit(draggedId, targetId) {
@@ -925,6 +1027,18 @@ function hideInstallBanner(persist = false) {
   }
 }
 
+function maybeShowAppUpdateModal() {
+  const lastSeenVersion = localStorage.getItem("momentum-last-seen-version");
+  if (lastSeenVersion !== APP_VERSION) {
+    appUpdateModal.classList.remove("hidden");
+  }
+}
+
+function closeAppUpdateModal() {
+  localStorage.setItem("momentum-last-seen-version", APP_VERSION);
+  appUpdateModal.classList.add("hidden");
+}
+
 // Install prompt handling
 window.addEventListener("beforeinstallprompt", event => {
   event.preventDefault();
@@ -978,6 +1092,14 @@ closeModalBtn.addEventListener("click", closeHabitModal);
 cancelModalBtn.addEventListener("click", closeHabitModal);
 habitModalBackdrop.addEventListener("click", closeHabitModal);
 
+// Habit detail modal events
+closeHabitDetailBtn.addEventListener("click", closeHabitDetail);
+habitDetailBackdrop.addEventListener("click", closeHabitDetail);
+
+// App update modal events
+closeAppUpdateBtn.addEventListener("click", closeAppUpdateModal);
+appUpdateBackdrop.addEventListener("click", closeAppUpdateModal);
+
 habitForm.addEventListener("submit", function (event) {
   event.preventDefault();
 
@@ -999,18 +1121,21 @@ deleteModalBackdrop.addEventListener("click", closeDeleteModal);
 // Escape key closes modals
 document.addEventListener("keydown", function (event) {
   if (event.key === "Escape") {
-    if (!habitModal.classList.contains("hidden")) {
-      closeHabitModal();
-    }
-
-    if (!deleteModal.classList.contains("hidden")) {
-      closeDeleteModal();
-    }
+    if (!habitModal.classList.contains("hidden")) closeHabitModal();
+    if (!deleteModal.classList.contains("hidden")) closeDeleteModal();
+    if (!habitDetailModal.classList.contains("hidden")) closeHabitDetail();
+    if (!appUpdateModal.classList.contains("hidden")) closeAppUpdateModal();
   }
 });
+
+// Make functions available to inline handlers
+window.openHabitDetailById = openHabitDetailById;
+window.openDeleteModalById = openDeleteModalById;
+window.toggleHabitById = toggleHabitById;
 
 // Init
 resetHabitPeriods();
 saveHabits();
 renderHabits();
 showInstallBanner();
+maybeShowAppUpdateModal();
