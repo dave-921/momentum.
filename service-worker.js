@@ -1,4 +1,4 @@
-const CACHE_NAME = "momentum-cache-v3";
+const CACHE_NAME = "momentum-cache-v5";
 
 const URLS_TO_CACHE = [
   "./",
