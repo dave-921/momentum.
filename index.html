@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Momentum.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <h1>Momentum.</h1>
+    <p class="app-subtitle">Build consistency. One day at a time.</p>
+
+    <div id="weeklySummary" class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Completed this week</div>
+        <div class="summary-value" id="summaryCompleted">0</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-label">Targets hit</div>
+        <div class="summary-value" id="summaryTargetsHit">0/0</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-label">Overall progress</div>
+        <div class="summary-value" id="summaryProgress">0%</div>
+      </div>
+
+      <div class="summary-card">
+        <div class="summary-label">Perfect weeks earned</div>
+        <div class="summary-value" id="summaryPerfectWeeks">0</div>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">This week</div>
+        <div class="chart-subtitle">Check-offs by day</div>
+      </div>
+
+      <div id="weeklyChart" class="weekly-chart">
+        <div class="chart-day">
+          <div class="chart-bar-wrap"><div class="chart-bar" id="bar-0"></div></div>
+          <div class="chart-day-label">Mon</div>
+        </div>
+        <div class="chart-day">
+          <div class="chart-bar-wrap"><div class="chart-bar" id="bar-1"></div></div>
+          <div class="chart-day-label">Tue</div>
+        </div>
+        <div class="chart-day">
+          <div class="chart-bar-wrap"><div class="chart-bar" id="bar-2"></div></div>
+          <div class="chart-day-label">Wed</div>
+        </div>
+        <div class="chart-day">
+          <div class="chart-bar-wrap"><div class="chart-bar" id="bar-3"></div></div>
+          <div class="chart-day-label">Thu</div>
+        </div>
+        <div class="chart-day">
+          <div class="chart-bar-wrap"><div class="chart-bar" id="bar-4"></div></div>
+          <div class="chart-day-label">Fri</div>
+        </div>
+        <div class="chart-day">
+          <div class="chart-bar-wrap"><div class="chart-bar" id="bar-5"></div></div>
+          <div class="chart-day-label">Sat</div>
+        </div>
+        <div class="chart-day">
+          <div class="chart-bar-wrap"><div class="chart-bar" id="bar-6"></div></div>
+          <div class="chart-day-label">Sun</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="insightsCard" class="insights-card">
+      <div class="insights-header">
+        <div class="chart-title">Insights</div>
+        <div class="chart-subtitle">Your strongest signals this week</div>
+      </div>
+
+      <div class="insights-grid">
+        <div class="insight-item">
+          <div class="insight-label">Longest current streak</div>
+          <div class="insight-value" id="insightLongestStreak">-</div>
+          <div class="insight-subtext" id="insightLongestStreakSubtext">No habits yet</div>
+        </div>
+
+        <div class="insight-item">
+          <div class="insight-label">Most consistent this week</div>
+          <div class="insight-value" id="insightMostConsistent">-</div>
+          <div class="insight-subtext" id="insightMostConsistentSubtext">No habits yet</div>
+        </div>
+
+        <div class="insight-item">
+          <div class="insight-label">Closest to target</div>
+          <div class="insight-value" id="insightClosestTarget">-</div>
+          <div class="insight-subtext" id="insightClosestTargetSubtext">No habits yet</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="top-actions desktop-actions">
+      <button id="openModalBtn" class="primary-btn">Add Habit</button>
+    </div>
+
+    <div id="emptyState" class="empty-state hidden">
+      <div class="empty-state-icon">⚡</div>
+      <h2>No habits yet</h2>
+      <p>Momentum starts with one commitment. Create your first habit to begin building your week.</p>
+      <button id="emptyStateAddBtn" class="primary-btn">Create First Habit</button>
+    </div>
+
+    <ul id="habitList"></ul>
+  </div>
+
+  <button id="mobileAddBtn" class="mobile-add-btn" aria-label="Add habit">
+    + Add Habit
+  </button>
+
+  <div id="celebrationToast" class="celebration-toast hidden" role="status" aria-live="polite">
+    <div class="celebration-toast-icon">🏆</div>
+    <div class="celebration-toast-text">
+      <div class="celebration-toast-title">Perfect week unlocked</div>
+      <div class="celebration-toast-subtitle" id="celebrationToastMessage">You hit your weekly target.</div>
+    </div>
+  </div>
+
+  <!-- Add Habit Modal -->
+  <div id="habitModal" class="modal hidden">
+    <div class="modal-backdrop" id="habitModalBackdrop"></div>
+
+    <div class="modal-content">
+      <button id="closeModalBtn" class="modal-close" aria-label="Close modal">✕</button>
+
+      <h2>Create Habit</h2>
+      <p class="modal-subtext">Choose a habit you are ready to commit to, and set how many days per week it should be completed.</p>
+
+      <form id="habitForm">
+        <label for="habitName">Habit name</label>
+        <input
+          type="text"
+          id="habitName"
+          name="habitName"
+          placeholder="e.g. Walk 10k steps"
+          maxlength="40"
+          required
+        >
+
+        <label for="targetDays">Days per week</label>
+        <select id="targetDays" name="targetDays" required>
+          <option value="1">1 day</option>
+          <option value="2">2 days</option>
+          <option value="3">3 days</option>
+          <option value="4">4 days</option>
+          <option value="5" selected>5 days</option>
+          <option value="6">6 days</option>
+          <option value="7">7 days</option>
+        </select>
+
+        <div class="modal-actions">
+          <button type="button" id="cancelModalBtn" class="secondary-btn">Cancel</button>
+          <button type="submit" class="primary-btn">Create Habit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal hidden">
+    <div class="modal-backdrop" id="deleteModalBackdrop"></div>
+
+    <div class="modal-content delete-modal">
+      <h2>Delete habit?</h2>
+      <p class="modal-subtext" id="deleteModalText">
+        Are you sure you want to delete this habit?
+      </p>
+
+      <div class="modal-actions">
+        <button type="button" id="cancelDeleteBtn" class="secondary-btn">Cancel</button>
+        <button type="button" id="confirmDeleteBtn" class="danger-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
