@@ -1,6 +1,10 @@
 let habits = JSON.parse(localStorage.getItem("habits")) || [];
 
-const APP_VERSION = "1.8.0";
+const APP_VERSION = "1.9.0";
+const ACTIVE_WEEK_KEY_STORAGE = "momentum-active-week-key";
+const LAST_WEEK_SNAPSHOT_STORAGE = "momentum-last-week-snapshot";
+const RESTORE_BANNER_DISMISSED_STORAGE = "momentum-restore-banner-dismissed-for";
+
 const today = new Date().toISOString().split("T")[0];
 let habitIndexToDelete = null;
 let celebrationToastTimeout = null;
@@ -20,7 +24,6 @@ const DAY_LABELS = {
   6: "Sat"
 };
 
-// Add Habit modal elements
 const habitModal = document.getElementById("habitModal");
 const openModalBtn = document.getElementById("openModalBtn");
 const mobileAddBtn = document.getElementById("mobileAddBtn");
@@ -32,14 +35,12 @@ const habitForm = document.getElementById("habitForm");
 const habitNameInput = document.getElementById("habitName");
 const targetDaysInput = document.getElementById("targetDays");
 
-// Delete modal elements
 const deleteModal = document.getElementById("deleteModal");
 const deleteModalBackdrop = document.getElementById("deleteModalBackdrop");
 const deleteModalText = document.getElementById("deleteModalText");
 const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
 const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
-// Habit detail modal
 const habitDetailModal = document.getElementById("habitDetailModal");
 const habitDetailBackdrop = document.getElementById("habitDetailBackdrop");
 const closeHabitDetailBtn = document.getElementById("closeHabitDetailBtn");
@@ -58,8 +59,9 @@ const detailStrongMonths = document.getElementById("detailStrongMonths");
 const detailYearConsistency = document.getElementById("detailYearConsistency");
 const detailReminderSummary = document.getElementById("detailReminderSummary");
 const openReminderModalBtn = document.getElementById("openReminderModalBtn");
+const detailCompleteHabitBtn = document.getElementById("detailCompleteHabitBtn");
+const detailCompletionStatus = document.getElementById("detailCompletionStatus");
 
-// Reminder modal
 const reminderModal = document.getElementById("reminderModal");
 const reminderBackdrop = document.getElementById("reminderBackdrop");
 const closeReminderModalBtn = document.getElementById("closeReminderModalBtn");
@@ -71,18 +73,15 @@ const saveReminderBtn = document.getElementById("saveReminderBtn");
 const notificationPermissionStatus = document.getElementById("notificationPermissionStatus");
 const notificationSettingsBtn = document.getElementById("notificationSettingsBtn");
 
-// App update modal
 const appUpdateModal = document.getElementById("appUpdateModal");
 const appUpdateBackdrop = document.getElementById("appUpdateBackdrop");
 const closeAppUpdateBtn = document.getElementById("closeAppUpdateBtn");
 
-// Summary elements
 const summaryCompleted = document.getElementById("summaryCompleted");
 const summaryTargetsHit = document.getElementById("summaryTargetsHit");
 const summaryProgress = document.getElementById("summaryProgress");
 const summaryPerfectWeeks = document.getElementById("summaryPerfectWeeks");
 
-// Empty state / sections
 const emptyState = document.getElementById("emptyState");
 const weeklySummary = document.getElementById("weeklySummary");
 const chartCard = document.querySelector(".chart-card");
@@ -91,7 +90,6 @@ const todayCard = document.getElementById("todayCard");
 const todayList = document.getElementById("todayList");
 const habitList = document.getElementById("habitList");
 
-// Monthly section
 const monthlySection = document.getElementById("monthlySection");
 const monthlyGrid = document.getElementById("monthlyGrid");
 const monthlySectionTitle = document.getElementById("monthlySectionTitle");
@@ -99,7 +97,6 @@ const prevMonthBtn = document.getElementById("prevMonthBtn");
 const nextMonthBtn = document.getElementById("nextMonthBtn");
 const resetMonthBtn = document.getElementById("resetMonthBtn");
 
-// Year achievements
 const yearAchievementsSection = document.getElementById("yearAchievementsSection");
 const yearAchievementsSubtitle = document.getElementById("yearAchievementsSubtitle");
 const achievementPerfectYear = document.getElementById("achievementPerfectYear");
@@ -111,12 +108,14 @@ const achievementEliteConsistencySubtext = document.getElementById("achievementE
 const achievementYearTotals = document.getElementById("achievementYearTotals");
 const achievementYearTotalsSubtext = document.getElementById("achievementYearTotalsSubtext");
 
-// Install banner
 const installBanner = document.getElementById("installBanner");
 const installAppBtn = document.getElementById("installAppBtn");
 const dismissInstallBtn = document.getElementById("dismissInstallBtn");
 
-// Celebration toast
+const weeklyRestoreBanner = document.getElementById("weeklyRestoreBanner");
+const restoreLastWeekBtn = document.getElementById("restoreLastWeekBtn");
+const dismissRestoreBannerBtn = document.getElementById("dismissRestoreBannerBtn");
+
 const celebrationToast = document.getElementById("celebrationToast");
 const celebrationToastMessage = document.getElementById("celebrationToastMessage");
 const confettiLayer = document.getElementById("confettiLayer");
@@ -321,13 +320,101 @@ function ensureHabitDefaults(habit, currentWeek) {
   }
 }
 
+function snapshotCurrentHabitsForRestore() {
+  const snapshot = habits.map(habit => ({
+    name: habit.name,
+    targetDays: habit.targetDays,
+    order: habit.order ?? 0,
+    reminder: {
+      enabled: Boolean(habit.reminder?.enabled),
+      time: habit.reminder?.time || "19:00",
+      days: Array.isArray(habit.reminder?.days) ? [...habit.reminder.days] : []
+    }
+  }));
+
+  localStorage.setItem(LAST_WEEK_SNAPSHOT_STORAGE, JSON.stringify(snapshot));
+}
+
+function getLastWeekSnapshot() {
+  try {
+    return JSON.parse(localStorage.getItem(LAST_WEEK_SNAPSHOT_STORAGE)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function dismissRestoreBannerForCurrentWeek() {
+  localStorage.setItem(RESTORE_BANNER_DISMISSED_STORAGE, currentWeekKey());
+  weeklyRestoreBanner.classList.add("hidden");
+}
+
+function maybeShowRestoreBanner() {
+  const snapshot = getLastWeekSnapshot();
+  const dismissedForWeek = localStorage.getItem(RESTORE_BANNER_DISMISSED_STORAGE);
+
+  if (snapshot.length === 0 || dismissedForWeek === currentWeekKey()) {
+    weeklyRestoreBanner.classList.add("hidden");
+    return;
+  }
+
+  weeklyRestoreBanner.classList.remove("hidden");
+}
+
+function restoreLastWeekHabits() {
+  const snapshot = getLastWeekSnapshot();
+  if (snapshot.length === 0) return;
+
+  const existingNames = new Set(habits.map(h => h.name.trim().toLowerCase()));
+  let nextOrder = habits.length === 0 ? 0 : Math.max(...habits.map(h => h.order ?? 0)) + 1;
+
+  snapshot.forEach(item => {
+    const key = item.name.trim().toLowerCase();
+    if (existingNames.has(key)) return;
+
+    habits.push({
+      id: createId(),
+      order: nextOrder++,
+      name: item.name,
+      targetDays: item.targetDays,
+      completedDays: 0,
+      streak: 0,
+      total: 0,
+      doneToday: false,
+      lastCompleted: null,
+      weekKey: currentWeekKey(),
+      weekHistory: getEmptyWeekHistory(),
+      history: {},
+      perfectWeeks: 0,
+      countedPerfectWeek: false,
+      reminder: {
+        enabled: Boolean(item.reminder?.enabled),
+        time: item.reminder?.time || "19:00",
+        days: Array.isArray(item.reminder?.days) ? [...item.reminder.days] : []
+      }
+    });
+
+    existingNames.add(key);
+  });
+
+  saveHabits();
+  dismissRestoreBannerForCurrentWeek();
+  renderHabits();
+}
+
 function resetHabitPeriods() {
   const currentWeek = currentWeekKey();
+  const storedWeek = localStorage.getItem(ACTIVE_WEEK_KEY_STORAGE);
+
+  if (storedWeek && storedWeek !== currentWeek) {
+    snapshotCurrentHabitsForRestore();
+  }
 
   habits.forEach((habit, index) => {
     ensureHabitDefaults(habit, currentWeek);
 
-    if (habit.order === 999999) habit.order = index;
+    if (habit.order === 999999) {
+      habit.order = index;
+    }
 
     if (habit.weekKey !== currentWeek) {
       const hitTargetLastWeek = habit.completedDays >= habit.targetDays;
@@ -347,13 +434,23 @@ function resetHabitPeriods() {
       habit.doneToday = false;
     }
   });
+
+  localStorage.setItem(ACTIVE_WEEK_KEY_STORAGE, currentWeek);
 }
 
 function getSortedHabits() {
   return [...habits].sort((a, b) => {
+    const aLocked = isHabitLockedForWeek(a);
+    const bLocked = isHabitLockedForWeek(b);
+
+    if (aLocked !== bLocked) return Number(aLocked) - Number(bLocked);
     if (a.doneToday !== b.doneToday) return Number(a.doneToday) - Number(b.doneToday);
     return (a.order ?? 0) - (b.order ?? 0);
   });
+}
+
+function isHabitLockedForWeek(habit) {
+  return (habit.completedDays || 0) >= (habit.targetDays || 0);
 }
 
 function getReminderSummary(reminder) {
@@ -562,21 +659,23 @@ function updateTodaySection() {
       <div class="today-item-left">
         <div class="today-item-name">${habit.name}</div>
         <div class="today-item-meta">
-          ${habit.doneToday ? "Completed today" : "Still to do today"} • ${habit.completedDays}/${habit.targetDays} this week
+          ${isHabitLockedForWeek(habit) ? "Weekly target hit" : (habit.doneToday ? "Completed today" : "Still to do today")} • ${habit.completedDays}/${habit.targetDays} this week
         </div>
       </div>
-      <div class="today-badge ${habit.doneToday ? "done" : "pending"}">
-        ${habit.doneToday ? "✓" : "○"}
+      <div class="today-badge ${habit.doneToday || isHabitLockedForWeek(habit) ? "done" : "pending"}">
+        ${isHabitLockedForWeek(habit) ? "🏆" : (habit.doneToday ? "✓" : "○")}
       </div>
     </div>
   `).join("");
 }
 
-function getHabitBadgeHtml(habit) {
+function getHabitBadgesHtml(habit) {
+  const badges = [];
   if (habit.completedDays >= habit.targetDays) {
-    return `<span class="badge badge-perfect">🏆 Perfect week</span>`;
+    badges.push(`<span class="badge badge-perfect">🏆 Target hit</span>`);
+    badges.push(`<span class="badge badge-locked">🔒 Locked</span>`);
   }
-  return "";
+  return badges.join("");
 }
 
 function renderHeatmap(habit) {
@@ -750,6 +849,12 @@ function triggerConfetti() {
   }
 }
 
+function getHabitCompletionButtonText(habit) {
+  if (isHabitLockedForWeek(habit)) return "Done for week";
+  if (habit.doneToday) return "Undo today";
+  return "Complete today";
+}
+
 function openHabitDetailById(habitId) {
   selectedHabitId = habitId;
   renderHabitDetail();
@@ -768,6 +873,7 @@ function renderHabitDetail() {
   const viewed = getViewedMonthInfo();
   const monthStatus = getMonthRewardStatus(habit, viewed.year, viewed.month);
   const yearStats = getSingleHabitYearStats(habit, viewed.year);
+  const locked = isHabitLockedForWeek(habit);
 
   detailHabitName.textContent = habit.name;
   detailHabitSubtitle.textContent = `Target: ${habit.targetDays} day${habit.targetDays === 1 ? "" : "s"} per week`;
@@ -797,6 +903,12 @@ function renderHabitDetail() {
   detailYearConsistency.textContent = `${Math.round(yearStats.ratio * 100)}%`;
 
   detailReminderSummary.textContent = getReminderSummary(habit.reminder);
+
+  detailCompleteHabitBtn.textContent = getHabitCompletionButtonText(habit);
+  detailCompleteHabitBtn.disabled = locked;
+  detailCompletionStatus.textContent = locked
+    ? "This habit is locked for the rest of the week."
+    : (habit.doneToday ? "Completed today — you can still undo until the weekly target is reached." : "Still available this week.");
 }
 
 function renderHabits() {
@@ -809,12 +921,17 @@ function renderHabits() {
     li.draggable = true;
     li.dataset.habitId = habit.id;
 
+    const locked = isHabitLockedForWeek(habit);
+
     if (habit.doneToday) {
       li.classList.add("completed");
     }
+    if (locked) {
+      li.classList.add("locked");
+    }
 
     const progressPercent = Math.min((habit.completedDays / habit.targetDays) * 100, 100);
-    const badgeHtml = getHabitBadgeHtml(habit);
+    const badgeHtml = getHabitBadgesHtml(habit);
     const heatmapHtml = renderHeatmap(habit);
 
     li.innerHTML = `
@@ -830,6 +947,15 @@ function renderHabits() {
 
         <div class="progress-bar">
           <div class="progress-fill" style="width: ${progressPercent}%"></div>
+        </div>
+
+        <div class="habit-action-row">
+          <button class="primary-btn small-btn complete-btn" onclick="event.stopPropagation(); toggleHabitById('${habit.id}');" ${locked ? "disabled" : ""}>
+            ${getHabitCompletionButtonText(habit)}
+          </button>
+          <div class="habit-action-meta">
+            ${locked ? "Locked until next week" : (habit.doneToday ? "Marked today" : "Available today")}
+          </div>
         </div>
 
         ${heatmapHtml}
@@ -871,6 +997,7 @@ function renderHabits() {
   renderMonthlyCalendar();
   updateYearAchievements();
   updateEmptyState();
+  maybeShowRestoreBanner();
 
   if (selectedHabitId) {
     renderHabitDetail();
@@ -983,14 +1110,18 @@ function toggleHabitById(habitId) {
   const habit = habits.find(h => h.id === habitId);
   const card = document.querySelector(`.habit-card[data-habit-id="${habitId}"]`);
 
-  if (!habit || !card) return;
+  if (!habit) return;
+
+  if (isHabitLockedForWeek(habit)) {
+    return;
+  }
 
   const viewed = getViewedMonthInfo();
   const previousMonthStatus = getMonthRewardStatus(habit, viewed.year, viewed.month);
 
-  const fill = card.querySelector(".progress-fill");
-  const stats = card.querySelector(".habit-stats");
-  const topRow = card.querySelector(".habit-top-row");
+  const fill = card?.querySelector(".progress-fill");
+  const stats = card?.querySelector(".habit-stats");
+  const topRow = card?.querySelector(".habit-top-row");
 
   const previousPercent = Math.min((habit.completedDays / habit.targetDays) * 100, 100);
   const dayIndex = getDayIndexFromDate(today);
@@ -1012,21 +1143,30 @@ function toggleHabitById(habitId) {
     const unlockedPerfectWeek = maybeAwardPerfectWeek(habit);
     const newPercent = Math.min((habit.completedDays / habit.targetDays) * 100, 100);
 
-    topRow.innerHTML = `
-      <div class="habit-name">${habit.name}</div>
-      ${getHabitBadgeHtml(habit)}
-    `;
+    if (topRow) {
+      topRow.innerHTML = `
+        <div class="habit-name">${habit.name}</div>
+        ${getHabitBadgesHtml(habit)}
+      `;
+    }
 
-    stats.innerHTML = `🎯 ${habit.completedDays}/${habit.targetDays} this week • 🔥 ${habit.streak} • ✅ ${habit.total} • 🏆 ${habit.perfectWeeks || 0}`;
-    card.classList.add("completed");
+    if (stats) {
+      stats.innerHTML = `🎯 ${habit.completedDays}/${habit.targetDays} this week • 🔥 ${habit.streak} • ✅ ${habit.total} • 🏆 ${habit.perfectWeeks || 0}`;
+    }
 
-    fill.style.transition = "none";
-    fill.style.width = `${previousPercent}%`;
+    if (card) {
+      card.classList.add("completed");
+    }
 
-    setTimeout(() => {
-      fill.style.transition = "width 0.5s cubic-bezier(0.22, 1, 0.36, 1)";
-      fill.style.width = `${newPercent}%`;
-    }, 10);
+    if (fill) {
+      fill.style.transition = "none";
+      fill.style.width = `${previousPercent}%`;
+
+      setTimeout(() => {
+        fill.style.transition = "width 0.5s cubic-bezier(0.22, 1, 0.36, 1)";
+        fill.style.width = `${newPercent}%`;
+      }, 10);
+    }
 
     if (unlockedPerfectWeek) {
       triggerTargetHitAnimation(card);
@@ -1044,17 +1184,26 @@ function toggleHabitById(habitId) {
 
     const newPercent = Math.min((habit.completedDays / habit.targetDays) * 100, 100);
 
-    topRow.innerHTML = `
-      <div class="habit-name">${habit.name}</div>
-      ${getHabitBadgeHtml(habit)}
-    `;
+    if (topRow) {
+      topRow.innerHTML = `
+        <div class="habit-name">${habit.name}</div>
+        ${getHabitBadgesHtml(habit)}
+      `;
+    }
 
-    stats.innerHTML = `🎯 ${habit.completedDays}/${habit.targetDays} this week • 🔥 ${habit.streak} • ✅ ${habit.total} • 🏆 ${habit.perfectWeeks || 0}`;
-    card.classList.remove("completed");
-    card.classList.remove("target-hit");
+    if (stats) {
+      stats.innerHTML = `🎯 ${habit.completedDays}/${habit.targetDays} this week • 🔥 ${habit.streak} • ✅ ${habit.total} • 🏆 ${habit.perfectWeeks || 0}`;
+    }
 
-    fill.style.transition = "none";
-    fill.style.width = `${newPercent}%`;
+    if (card) {
+      card.classList.remove("completed");
+      card.classList.remove("target-hit");
+    }
+
+    if (fill) {
+      fill.style.transition = "none";
+      fill.style.width = `${newPercent}%`;
+    }
   }
 
   const currentMonthStatus = getMonthRewardStatus(habit, viewed.year, viewed.month);
@@ -1173,6 +1322,9 @@ habitModalBackdrop.addEventListener("click", closeHabitModal);
 
 closeHabitDetailBtn.addEventListener("click", closeHabitDetail);
 habitDetailBackdrop.addEventListener("click", closeHabitDetail);
+detailCompleteHabitBtn.addEventListener("click", () => {
+  if (selectedHabitId) toggleHabitById(selectedHabitId);
+});
 
 openReminderModalBtn.addEventListener("click", () => {
   if (selectedHabitId) openReminderModalForHabit(selectedHabitId);
@@ -1180,7 +1332,7 @@ openReminderModalBtn.addEventListener("click", () => {
 
 notificationSettingsBtn.addEventListener("click", async () => {
   await requestNotificationPermission();
-  if (Notification.permission === "granted") {
+  if (typeof Notification !== "undefined" && Notification.permission === "granted") {
     await sendTestNotification();
   }
 });
@@ -1189,7 +1341,7 @@ closeReminderModalBtn.addEventListener("click", closeReminderModal);
 reminderBackdrop.addEventListener("click", closeReminderModal);
 requestNotificationPermissionBtn.addEventListener("click", async () => {
   await requestNotificationPermission();
-  if (Notification.permission === "granted") {
+  if (typeof Notification !== "undefined" && Notification.permission === "granted") {
     await sendTestNotification();
   }
 });
@@ -1203,6 +1355,9 @@ reminderDaysGrid.querySelectorAll(".day-pill").forEach(btn => {
 
 closeAppUpdateBtn.addEventListener("click", closeAppUpdateModal);
 appUpdateBackdrop.addEventListener("click", closeAppUpdateModal);
+
+restoreLastWeekBtn.addEventListener("click", restoreLastWeekHabits);
+dismissRestoreBannerBtn.addEventListener("click", dismissRestoreBannerForCurrentWeek);
 
 habitForm.addEventListener("submit", function (event) {
   event.preventDefault();
