@@ -45,6 +45,17 @@
       <div id="todayList" class="today-list"></div>
     </div>
 
+    <div id="weeklyRestoreBanner" class="restore-banner hidden">
+      <div class="restore-banner-text">
+        <div class="restore-banner-title">New week started</div>
+        <div class="restore-banner-subtitle">Restore any missing habits from last week.</div>
+      </div>
+      <div class="restore-banner-actions">
+        <button id="restoreLastWeekBtn" class="primary-btn small-btn">Restore</button>
+        <button id="dismissRestoreBannerBtn" class="secondary-btn small-btn">Dismiss</button>
+      </div>
+    </div>
+
     <div class="top-actions desktop-actions">
       <button id="openModalBtn" class="primary-btn">Add Habit</button>
     </div>
@@ -210,7 +221,6 @@
 
   <div id="confettiLayer" class="confetti-layer"></div>
 
-  <!-- Create habit modal -->
   <div id="habitModal" class="modal hidden">
     <div class="modal-backdrop" id="habitModalBackdrop"></div>
 
@@ -250,7 +260,6 @@
     </div>
   </div>
 
-  <!-- Delete habit modal -->
   <div id="deleteModal" class="modal hidden">
     <div class="modal-backdrop" id="deleteModalBackdrop"></div>
 
@@ -267,7 +276,6 @@
     </div>
   </div>
 
-  <!-- Habit detail modal -->
   <div id="habitDetailModal" class="modal hidden">
     <div class="modal-backdrop" id="habitDetailBackdrop"></div>
 
@@ -303,6 +311,11 @@
       <div class="detail-reward-row">
         <div id="detailMonthReward" class="month-reward neutral">Building month</div>
         <div class="detail-reward-meta" id="detailMonthRewardMeta">0 / 0 target completions this month</div>
+      </div>
+
+      <div class="detail-action-row">
+        <button id="detailCompleteHabitBtn" class="primary-btn">Complete today</button>
+        <div class="detail-action-status" id="detailCompletionStatus">Still available this week</div>
       </div>
 
       <div class="detail-reminder-section">
@@ -343,7 +356,6 @@
     </div>
   </div>
 
-  <!-- Reminder modal -->
   <div id="reminderModal" class="modal hidden">
     <div class="modal-backdrop" id="reminderBackdrop"></div>
 
@@ -387,7 +399,6 @@
     </div>
   </div>
 
-  <!-- App update modal -->
   <div id="appUpdateModal" class="modal hidden">
     <div class="modal-backdrop" id="appUpdateBackdrop"></div>
 
@@ -396,9 +407,9 @@
       <p class="modal-subtext">Here’s what’s new in this version.</p>
 
       <div class="update-list">
-        <div class="update-item">Reminder settings for each habit</div>
-        <div class="update-item">Notification permission flow built into the app</div>
-        <div class="update-item">Push-ready structure for real reminders next</div>
+        <div class="update-item">Habits now lock once the weekly target is reached</div>
+        <div class="update-item">A new week can restore missing habits from the previous week</div>
+        <div class="update-item">Habit completion is now available directly on each card and in detail view</div>
       </div>
 
       <div class="modal-actions">
