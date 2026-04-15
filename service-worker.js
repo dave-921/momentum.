@@ -1,4 +1,4 @@
-const CACHE_NAME = "momentum-cache-v8";
+const CACHE_NAME = "momentum-cache-v9";
 
 const URLS_TO_CACHE = [
   "./",
@@ -6,7 +6,7 @@ const URLS_TO_CACHE = [
   "./style.css",
   "./script.js",
   "./manifest.json",
-  "./favicon.svg",
+"./favicon-32.png",
   "./icon-192.png",
   "./icon-512.png"
 ];
