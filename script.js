@@ -177,7 +177,7 @@ function yesterday() {
 function getDayIndexFromDate(dateString) {
   const date = new Date(dateString);
   const day = date.getDay();
-  return day === 0 ? 6 : day - 1; // Mon=0 ... Sun=6
+  return day === 0 ? 6 : day - 1;
 }
 
 function getEmptyWeekHistory() {
@@ -206,7 +206,7 @@ function getLast7Days() {
 function getMonthInfo(year, month) {
   const first = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const firstDayIndex = (first.getDay() + 6) % 7; // Monday-first
+  const firstDayIndex = (first.getDay() + 6) % 7;
   const label = first.toLocaleString("en-GB", { month: "long", year: "numeric" });
   return { year, month, daysInMonth, firstDayIndex, label };
 }
@@ -582,7 +582,7 @@ async function subscribeDeviceForPush(habitId = null, reminder = null) {
   if (!subscription) {
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(BDb8tgdYibU2sYwAutuI3rQbMRcTDG4Z24NDbWr7xkt7XnN8Qko128agsidbdkFSZwfPMIg1qwXEIC4hg3g_xuo)
+      applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
     });
   }
 
@@ -1551,20 +1551,9 @@ if (resetMonthBtn) {
   });
 }
 
-if (openModalBtn) {
-  openModalBtn.addEventListener("click", openHabitModal);
-  openModalBtn.addEventListener("touchstart", openHabitModal, { passive: true });
-}
-
-if (mobileAddBtn) {
-  mobileAddBtn.addEventListener("click", openHabitModal);
-  mobileAddBtn.addEventListener("touchstart", openHabitModal, { passive: true });
-}
-
-if (emptyStateAddBtn) {
-  emptyStateAddBtn.addEventListener("click", openHabitModal);
-  emptyStateAddBtn.addEventListener("touchstart", openHabitModal, { passive: true });
-}
+if (openModalBtn) openModalBtn.onclick = openHabitModal;
+if (mobileAddBtn) mobileAddBtn.onclick = openHabitModal;
+if (emptyStateAddBtn) emptyStateAddBtn.onclick = openHabitModal;
 
 if (closeModalBtn) closeModalBtn.addEventListener("click", closeHabitModal);
 if (cancelModalBtn) cancelModalBtn.addEventListener("click", closeHabitModal);
@@ -1600,7 +1589,6 @@ if (notificationSettingsBtn) {
       showCelebrationToast("Push setup failed. Check the backend.");
     }
   });
-}
 }
 
 if (closeReminderModalBtn) closeReminderModalBtn.addEventListener("click", closeReminderModal);
