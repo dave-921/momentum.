@@ -403,10 +403,6 @@ select {
   box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.18), 0 0 18px rgba(20, 184, 166, 0.18);
 }
 
-.habit-content {
-  text-align: left;
-}
-
 .habit-main-row {
   display: flex;
   gap: 12px;
@@ -860,15 +856,6 @@ select {
   overflow-y: auto;
 }
 
-.modal-close {
-  position: sticky;
-  top: 0;
-  margin-left: auto;
-  display: block;
-  background: var(--panel);
-  z-index: 2;
-}
-
 .detail-header {
   text-align: left;
   margin-bottom: 16px;
@@ -1126,6 +1113,12 @@ select {
 
 .hidden {
   display: none !important;
+  pointer-events: none !important;
+}
+
+.modal.hidden {
+  display: none !important;
+  pointer-events: none !important;
 }
 
 .modal {
@@ -1138,6 +1131,7 @@ select {
   padding: 24px 12px;
   box-sizing: border-box;
   overflow-y: auto;
+  pointer-events: auto;
 }
 
 .modal-backdrop {
@@ -1209,10 +1203,11 @@ select {
 }
 
 .modal-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: transparent;
+  position: sticky;
+  top: 0;
+  margin-left: auto;
+  display: block;
+  background: var(--panel);
   color: white;
   border: none;
   font-size: 16px;
@@ -1220,6 +1215,7 @@ select {
   min-width: 40px;
   min-height: 40px;
   border-radius: 10px;
+  z-index: 2;
 }
 
 .modal-close:hover {
@@ -1236,7 +1232,7 @@ select {
   left: 16px;
   right: 16px;
   bottom: 16px;
-  z-index: 900;
+  z-index: 1100;
   background: var(--accent);
   color: white;
   border: none;
@@ -1245,6 +1241,12 @@ select {
   font-weight: 700;
   font-size: 16px;
   box-shadow: 0 10px 24px rgba(20, 184, 166, 0.24);
+}
+
+#mobileAddBtn,
+#openModalBtn {
+  position: relative;
+  z-index: 10;
 }
 
 @media (max-width: 900px) {
@@ -1374,37 +1376,22 @@ select {
     min-width: 40px;
   }
 
-.modal {
-  align-items: flex-end;
-  padding: 0;
-}
+  .modal {
+    align-items: flex-end;
+    padding: 0;
+  }
 
-.modal-content {
-  width: 100%;
-  max-width: none;
-  max-height: 85vh;
-  margin: 0;
-  border-radius: 18px 18px 0 0;
-  padding-bottom: 18px;
-}
+  .modal-content {
+    width: 100%;
+    max-width: none;
+    max-height: 85vh;
+    margin: 0;
+    border-radius: 18px 18px 0 0;
+    padding-bottom: 18px;
+  }
 
   .empty-state {
     margin-top: 20px;
     padding: 24px 18px;
   }
-}
-
-#mobileAddBtn,
-#openModalBtn {
-  position: relative;
-  z-index: 10;
-}
-
-.modal.hidden {
-  display: none !important;
-  pointer-events: none;
-}
-
-.modal {
-  pointer-events: auto;
 }
