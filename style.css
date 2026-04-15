@@ -856,6 +856,17 @@ select {
 .detail-modal {
   width: 760px;
   max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.modal-close {
+  position: sticky;
+  top: 0;
+  margin-left: auto;
+  display: block;
+  background: var(--panel);
+  z-index: 2;
 }
 
 .detail-header {
@@ -1121,20 +1132,29 @@ select {
   position: fixed;
   inset: 0;
   z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 24px 12px;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .modal-backdrop {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.6);
+  z-index: 0;
 }
 
 .modal-content {
   position: relative;
-  z-index: 1001;
+  z-index: 1;
   width: 420px;
   max-width: calc(100vw - 24px);
-  margin: 10vh auto 0;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  margin: 0 auto;
   background: var(--panel);
   border-radius: 18px;
   padding: 20px;
@@ -1354,18 +1374,19 @@ select {
     min-width: 40px;
   }
 
-  .modal-content {
-    margin: auto 12px 12px;
-    width: auto;
-    max-width: none;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: auto;
-    border-radius: 18px 18px 0 0;
-    padding-bottom: 18px;
-  }
+.modal {
+  align-items: flex-end;
+  padding: 0;
+}
+
+.modal-content {
+  width: 100%;
+  max-width: none;
+  max-height: 85vh;
+  margin: 0;
+  border-radius: 18px 18px 0 0;
+  padding-bottom: 18px;
+}
 
   .empty-state {
     margin-top: 20px;
