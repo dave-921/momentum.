@@ -1,5 +1,6 @@
 let habits = JSON.parse(localStorage.getItem("habits")) || [];
 
+const PUSH_BACKEND_URL = "http://localhost:3000";
 const APP_VERSION = "1.10.0";
 const ACTIVE_WEEK_KEY_STORAGE = "momentum-active-week-key";
 const LAST_WEEK_SNAPSHOT_STORAGE = "momentum-last-week-snapshot";
@@ -546,6 +547,78 @@ async function sendTestNotification() {
     badge: "icon-192.png",
     data: { url: "./" }
   });
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  const rawData = atob(base64);
+  return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+}
+
+async function getVapidPublicKey() {
+  const response = await fetch(`${PUSH_BACKEND_URL}/vapid-public-key`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch VAPID public key");
+  }
+  const data = await response.json();
+  return data.publicKey;
+}
+
+async function subscribeDeviceForPush(habitId = null, reminder = null) {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    throw new Error("Push is not supported on this device");
+  }
+
+  if (Notification.permission !== "granted") {
+    throw new Error("Notification permission not granted");
+  }
+
+  const registration = await navigator.serviceWorker.ready;
+  const vapidPublicKey = await getVapidPublicKey();
+
+  let subscription = await registration.pushManager.getSubscription();
+
+  if (!subscription) {
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(BDb8tgdYibU2sYwAutuI3rQbMRcTDG4Z24NDbWr7xkt7XnN8Qko128agsidbdkFSZwfPMIg1qwXEIC4hg3g_xuo)
+    });
+  }
+
+  const response = await fetch(`${PUSH_BACKEND_URL}/subscribe`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      subscription,
+      habitId,
+      reminder
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to save subscription");
+  }
+
+  return subscription;
+}
+
+async function sendBackendTestPush(endpoint) {
+  const response = await fetch(`${PUSH_BACKEND_URL}/send-test`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ endpoint })
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to send backend test push");
+  }
+
+  return response.json();
 }
 
 // ---------- UI updates ----------
@@ -1495,11 +1568,20 @@ if (openReminderModalBtn) {
 
 if (notificationSettingsBtn) {
   notificationSettingsBtn.addEventListener("click", async () => {
-    await requestNotificationPermission();
-    if (typeof Notification !== "undefined" && Notification.permission === "granted") {
-      await sendTestNotification();
+    try {
+      await requestNotificationPermission();
+
+      if (typeof Notification !== "undefined" && Notification.permission === "granted") {
+        const subscription = await subscribeDeviceForPush();
+        await sendBackendTestPush(subscription.endpoint);
+        showCelebrationToast("Push notifications connected.");
+      }
+    } catch (error) {
+      console.error(error);
+      showCelebrationToast("Push setup failed. Check the backend.");
     }
   });
+}
 }
 
 if (closeReminderModalBtn) closeReminderModalBtn.addEventListener("click", closeReminderModal);
