@@ -29,8 +29,8 @@
         <div class="install-banner-subtitle">Add it to your home screen for the best experience.</div>
       </div>
       <div class="install-banner-actions">
-        <button id="installAppBtn" class="primary-btn small-btn">Install</button>
-        <button id="dismissInstallBtn" class="secondary-btn small-btn">Later</button>
+        <button id="installAppBtn" type="button" class="primary-btn small-btn">Install</button>
+        <button id="dismissInstallBtn" type="button" class="secondary-btn small-btn">Later</button>
       </div>
     </div>
 
@@ -40,7 +40,7 @@
           <div class="section-title">Today</div>
           <div class="section-subtitle">What’s left to complete</div>
         </div>
-        <button id="notificationSettingsBtn" class="secondary-btn small-btn">Enable reminders</button>
+        <button id="notificationSettingsBtn" type="button" class="secondary-btn small-btn">Enable reminders</button>
       </div>
       <div id="todayList" class="today-list"></div>
     </div>
@@ -51,20 +51,20 @@
         <div class="restore-banner-subtitle">Restore any missing habits from last week.</div>
       </div>
       <div class="restore-banner-actions">
-        <button id="restoreLastWeekBtn" class="primary-btn small-btn">Restore</button>
-        <button id="dismissRestoreBannerBtn" class="secondary-btn small-btn">Dismiss</button>
+        <button id="restoreLastWeekBtn" type="button" class="primary-btn small-btn">Restore</button>
+        <button id="dismissRestoreBannerBtn" type="button" class="secondary-btn small-btn">Dismiss</button>
       </div>
     </div>
 
     <div class="top-actions desktop-actions">
-      <button id="openModalBtn" class="primary-btn">Add Habit</button>
+      <button id="openModalBtn" type="button" class="primary-btn">Add Habit</button>
     </div>
 
     <div id="emptyState" class="empty-state hidden">
       <div class="empty-state-icon">⚡</div>
       <h2>No habits yet</h2>
       <p>Momentum starts with one commitment. Create your first habit to begin building your week.</p>
-      <button id="emptyStateAddBtn" class="primary-btn">Create First Habit</button>
+      <button id="emptyStateAddBtn" type="button" class="primary-btn">Create First Habit</button>
     </div>
 
     <ul id="habitList"></ul>
@@ -164,9 +164,9 @@
         </div>
 
         <div class="month-nav">
-          <button id="prevMonthBtn" class="secondary-btn small-btn month-nav-btn">←</button>
-          <button id="resetMonthBtn" class="secondary-btn small-btn month-nav-btn">Current</button>
-          <button id="nextMonthBtn" class="secondary-btn small-btn month-nav-btn">→</button>
+          <button id="prevMonthBtn" type="button" class="secondary-btn small-btn month-nav-btn">←</button>
+          <button id="resetMonthBtn" type="button" class="secondary-btn small-btn month-nav-btn">Current</button>
+          <button id="nextMonthBtn" type="button" class="secondary-btn small-btn month-nav-btn">→</button>
         </div>
       </div>
 
@@ -207,7 +207,7 @@
     </div>
   </div>
 
-  <button id="mobileAddBtn" class="mobile-add-btn" aria-label="Add habit">
+  <button id="mobileAddBtn" type="button" class="mobile-add-btn" aria-label="Add habit">
     + Add Habit
   </button>
 
@@ -225,7 +225,7 @@
     <div class="modal-backdrop" id="habitModalBackdrop"></div>
 
     <div class="modal-content">
-      <button id="closeModalBtn" class="modal-close" aria-label="Close modal">✕</button>
+      <button id="closeModalBtn" type="button" class="modal-close" aria-label="Close modal">✕</button>
 
       <h2>Create Habit</h2>
       <p class="modal-subtext">Choose a habit you are ready to commit to, and set how many days per week it should be completed.</p>
@@ -280,7 +280,7 @@
     <div class="modal-backdrop" id="habitDetailBackdrop"></div>
 
     <div class="modal-content detail-modal">
-      <button id="closeHabitDetailBtn" class="modal-close" aria-label="Close habit detail">✕</button>
+      <button id="closeHabitDetailBtn" type="button" class="modal-close" aria-label="Close habit detail">✕</button>
 
       <div class="detail-header">
         <div>
@@ -314,7 +314,7 @@
       </div>
 
       <div class="detail-action-row">
-        <button id="detailCompleteHabitBtn" class="primary-btn">Complete today</button>
+        <button id="detailCompleteHabitBtn" type="button" class="primary-btn">Complete today</button>
         <div class="detail-action-status" id="detailCompletionStatus">Still available this week</div>
       </div>
 
@@ -323,7 +323,7 @@
           <div class="section-title">Reminders</div>
           <div class="section-subtitle" id="detailReminderSummary">No reminder set</div>
         </div>
-        <button id="openReminderModalBtn" class="secondary-btn small-btn">Edit reminder</button>
+        <button id="openReminderModalBtn" type="button" class="secondary-btn small-btn">Edit reminder</button>
       </div>
 
       <div class="detail-calendar-section">
@@ -360,7 +360,7 @@
     <div class="modal-backdrop" id="reminderBackdrop"></div>
 
     <div class="modal-content reminder-modal">
-      <button id="closeReminderModalBtn" class="modal-close" aria-label="Close reminder modal">✕</button>
+      <button id="closeReminderModalBtn" type="button" class="modal-close" aria-label="Close reminder modal">✕</button>
 
       <h2>Habit reminder</h2>
       <p class="modal-subtext">Choose when Momentum. should remind you about this habit.</p>
@@ -409,7 +409,7 @@
       <div class="update-list">
         <div class="update-item">Habits now lock once the weekly target is reached</div>
         <div class="update-item">A new week can restore missing habits from the previous week</div>
-        <div class="update-item">Habit completion is now available directly on each card and in detail view</div>
+        <div class="update-item">Habit completion now uses a dedicated checkbox-style action</div>
       </div>
 
       <div class="modal-actions">
