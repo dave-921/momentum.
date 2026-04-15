@@ -1232,7 +1232,7 @@ select {
   left: 16px;
   right: 16px;
   bottom: 16px;
-  z-index: 1100;
+  z-index: 1200;
   background: var(--accent);
   color: white;
   border: none;
@@ -1244,11 +1244,11 @@ select {
 }
 
 #mobileAddBtn,
-#openModalBtn {
+#openModalBtn,
+#emptyStateAddBtn {
   position: relative;
-  z-index: 10;
+  z-index: 20;
 }
-
 @media (max-width: 900px) {
   .summary-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1358,13 +1358,13 @@ select {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-  .desktop-actions {
-    display: none;
-  }
+.desktop-actions {
+  display: none;
+}
 
-  .mobile-add-btn {
-    display: block;
-  }
+.mobile-add-btn {
+  display: block !important;
+}
 
   .celebration-toast {
     bottom: 88px;
@@ -1394,4 +1394,13 @@ select {
     margin-top: 20px;
     padding: 24px 18px;
   }
+}
+
+.install-banner:not(.hidden),
+.restore-banner:not(.hidden) {
+  display: flex;
+}
+
+button {
+  touch-action: manipulation;
 }
