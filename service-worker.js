@@ -1,4 +1,4 @@
-const CACHE_NAME = "momentum-cache-v12";
+const CACHE_NAME = "momentum-cache-v14";
 
 const URLS_TO_CACHE = [
   "./",
@@ -53,6 +53,33 @@ self.addEventListener("notificationclick", event => {
       }
       if (clients.openWindow) {
         return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+self.addEventListener("push", event => {
+  let payload = {
+    title: "Momentum.",
+    body: "You have a habit reminder.",
+    url: "./"
+  };
+
+  try {
+    if (event.data) {
+      payload = { ...payload, ...event.data.json() };
+    }
+  } catch {
+    // fallback stays in place
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: "icon-192.png",
+      badge: "icon-192.png",
+      data: {
+        url: payload.url || "./"
       }
     })
   );
