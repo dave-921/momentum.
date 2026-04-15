@@ -1,3 +1,5 @@
+const APP_VERSION = "1.10.0";
+
 function renderHabits() {
   habitList.innerHTML = "";
   const sortedHabits = getSortedHabits();
