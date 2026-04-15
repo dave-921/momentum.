@@ -97,7 +97,16 @@ select {
   color: white;
 }
 
-.install-banner {
+.primary-btn:disabled,
+.secondary-btn:disabled,
+.danger-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.install-banner,
+.restore-banner {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -110,18 +119,21 @@ select {
   box-shadow: 0 0 0 1px rgba(255,255,255,0.03);
 }
 
-.install-banner-title {
+.install-banner-title,
+.restore-banner-title {
   font-size: 15px;
   font-weight: 800;
 }
 
-.install-banner-subtitle {
+.install-banner-subtitle,
+.restore-banner-subtitle {
   font-size: 13px;
   opacity: 0.72;
   margin-top: 4px;
 }
 
-.install-banner-actions {
+.install-banner-actions,
+.restore-banner-actions {
   display: flex;
   gap: 10px;
   flex-shrink: 0;
@@ -370,7 +382,7 @@ select {
   position: relative;
   margin: 12px auto;
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
   background: var(--panel);
   border-radius: 14px;
   padding: 14px;
@@ -388,6 +400,10 @@ select {
   opacity: 0.45;
 }
 
+.habit-card.locked {
+  box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.18), 0 0 18px rgba(20, 184, 166, 0.18);
+}
+
 .habit-content {
   text-align: left;
 }
@@ -396,7 +412,7 @@ select {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-right: 72px;
+  padding-right: 120px;
   flex-wrap: wrap;
 }
 
@@ -421,6 +437,12 @@ select {
   background: rgba(20, 184, 166, 0.16);
   color: var(--accent-soft);
   border: 1px solid rgba(20, 184, 166, 0.35);
+}
+
+.badge-locked {
+  background: rgba(255,255,255,0.08);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
 .habit-card.target-hit {
@@ -466,6 +488,23 @@ select {
   width: 0%;
   background: linear-gradient(90deg, var(--accent-dark), var(--accent-light));
   border-radius: 999px;
+}
+
+.habit-action-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.habit-action-meta {
+  font-size: 11px;
+  opacity: 0.68;
+}
+
+.complete-btn {
+  min-width: 128px;
 }
 
 .heatmap-wrap {
@@ -787,6 +826,20 @@ select {
 }
 
 .detail-reward-meta {
+  font-size: 12px;
+  opacity: 0.72;
+}
+
+.detail-action-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.detail-action-status {
   font-size: 12px;
   opacity: 0.72;
 }
@@ -1135,16 +1188,19 @@ select {
     grid-template-columns: 1fr;
   }
 
-  .install-banner {
+  .install-banner,
+  .restore-banner {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .install-banner-actions {
+  .install-banner-actions,
+  .restore-banner-actions {
     width: 100%;
   }
 
-  .install-banner-actions button {
+  .install-banner-actions button,
+  .restore-banner-actions button {
     flex: 1;
   }
 }
@@ -1218,7 +1274,9 @@ select {
   .monthly-header-row,
   .month-card-top,
   .detail-reward-row,
-  .today-header {
+  .detail-action-row,
+  .today-header,
+  .habit-action-row {
     flex-direction: column;
     align-items: flex-start;
   }
