@@ -1200,12 +1200,18 @@ function reorderHabit(draggedId, targetId) {
   renderHabits();
 }
 
-function openHabitModal() {
+function openHabitModal(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
   if (habitModal) {
     habitModal.classList.remove("hidden");
   }
+
   if (habitNameInput) {
-    habitNameInput.focus();
+    setTimeout(() => habitNameInput.focus(), 50);
   }
 }
 
@@ -1459,6 +1465,7 @@ function showInstallBanner() {
   if (!installBanner) return;
 
   const dismissed = localStorage.getItem("momentum-install-dismissed") === "true";
+
   if (deferredPrompt && !dismissed) {
     installBanner.classList.remove("hidden");
   }
@@ -1544,9 +1551,21 @@ if (resetMonthBtn) {
   });
 }
 
-if (openModalBtn) openModalBtn.addEventListener("click", openHabitModal);
-if (mobileAddBtn) mobileAddBtn.addEventListener("click", openHabitModal);
-if (emptyStateAddBtn) emptyStateAddBtn.addEventListener("click", openHabitModal);
+if (openModalBtn) {
+  openModalBtn.addEventListener("click", openHabitModal);
+  openModalBtn.addEventListener("touchstart", openHabitModal, { passive: true });
+}
+
+if (mobileAddBtn) {
+  mobileAddBtn.addEventListener("click", openHabitModal);
+  mobileAddBtn.addEventListener("touchstart", openHabitModal, { passive: true });
+}
+
+if (emptyStateAddBtn) {
+  emptyStateAddBtn.addEventListener("click", openHabitModal);
+  emptyStateAddBtn.addEventListener("touchstart", openHabitModal, { passive: true });
+}
+
 if (closeModalBtn) closeModalBtn.addEventListener("click", closeHabitModal);
 if (cancelModalBtn) cancelModalBtn.addEventListener("click", closeHabitModal);
 if (habitModalBackdrop) habitModalBackdrop.addEventListener("click", closeHabitModal);
@@ -1650,6 +1669,7 @@ window.toggleHabitById = toggleHabitById;
 
 // ---------- Init ----------
 
+localStorage.removeItem("momentum-install-dismissed");
 resetHabitPeriods();
 saveHabits();
 renderHabits();
