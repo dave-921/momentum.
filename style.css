@@ -1393,3 +1393,18 @@ select {
     padding: 24px 18px;
   }
 }
+
+#mobileAddBtn,
+#openModalBtn {
+  position: relative;
+  z-index: 10;
+}
+
+.modal.hidden {
+  display: none !important;
+  pointer-events: none;
+}
+
+.modal {
+  pointer-events: auto;
+}
